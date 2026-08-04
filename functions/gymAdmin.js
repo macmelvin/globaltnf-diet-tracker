@@ -100,32 +100,34 @@ exports.deleteGym = onCall({ region: REGION }, async (req) => {
   const gymId = ((req.data && req.data.gymId) || "").trim();
   if (!gymId) throw new HttpsError("invalid-argument", "gymId is required.");
 
-  const db = admin.firestore();
-  const summary = { enrollments: 0, pendingEnrollments: 0, gymOwnerLogins: 0, gym: 0 };
+  try {
+    const db = admin.firestore();
+    const summary = { enrollments: 0, pendingEnrollments: 0, gymOwnerLogins: 0, gym: 0 };
 
-  // member enrollments in this gym (collection-group on the gymId field)
-  const enr = await db.collectionGroup("enrollments").where("gymId", "==", gymId).get();
-  await _deleteRefs(db, enr.docs.map((d) => d.ref));
-  summary.enrollments = enr.size;
+    const enr = await db.collectionGroup("enrollments").where("gymId", "==", gymId).get();
+    await _deleteRefs(db, enr.docs.map((d) => d.ref));
+    summary.enrollments = enr.size;
 
-  // pending invites for this gym
-  const pend = await db.collection("pendingEnrollments").where("gymId", "==", gymId).get();
-  await _deleteRefs(db, pend.docs.map((d) => d.ref));
-  summary.pendingEnrollments = pend.size;
+    const pend = await db.collection("pendingEnrollments").where("gymId", "==", gymId).get();
+    await _deleteRefs(db, pend.docs.map((d) => d.ref));
+    summary.pendingEnrollments = pend.size;
 
-  // gym-owner logins tied to this gym (Auth user + mapping doc); never the admin
-  const owners = await db.collection("gymOwners").where("gymId", "==", gymId).get();
-  for (const doc of owners.docs) {
-    if (ADMIN_UIDS.includes(doc.id)) continue;
-    try { await admin.auth().deleteUser(doc.id); summary.gymOwnerLogins++; } catch (e) { /* already gone */ }
-    await doc.ref.delete();
+    const owners = await db.collection("gymOwners").where("gymId", "==", gymId).get();
+    for (const doc of owners.docs) {
+      if (ADMIN_UIDS.includes(doc.id)) continue;
+      try { await admin.auth().deleteUser(doc.id); summary.gymOwnerLogins++; } catch (e) { /* already gone */ }
+      await doc.ref.delete();
+    }
+
+    await db.recursiveDelete(db.doc(`gyms/${gymId}`));
+    summary.gym = 1;
+
+    return { ok: true, gymId, summary };
+  } catch (e) {
+    console.error("deleteGym failed for", gymId, "-", e && (e.stack || e.message || e));
+    if (e instanceof HttpsError) throw e;
+    throw new HttpsError("internal", "deleteGym failed: " + (e && e.message ? e.message : String(e)));
   }
-
-  // the gym doc + its billingSnapshots subcollection
-  await db.recursiveDelete(db.doc(`gyms/${gymId}`));
-  summary.gym = 1;
-
-  return { ok: true, gymId, summary };
 });
 
 
