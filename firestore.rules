@@ -7,7 +7,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
     function isAdmin() {
-      return request.auth != null && request.auth.uid == "U51HtMKGzMPObg48Ry2h4KzudBX2";
+      return request.auth != null && request.auth.uid == "PLACEHOLDER_ADMIN_UID";
     }
     function isGymOwner(gymId) {
       return request.auth != null && request.auth.token.gymId == gymId;
