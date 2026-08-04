@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProteinTracker — Admin Console</title>
+<title>Diet Tracker — Admin Console</title>
 <style>
   :root{ --surface:#fcfcfb; --page:#f9f9f7; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
     --grid:#e1e0d9; --border:rgba(11,11,11,0.10); --brand:#2a78d6; --good:#0ca30c; --warn:#eda100; --bad:#d03b3b; }
@@ -73,7 +73,7 @@
   <!-- LOGIN -->
   <div id="login">
     <h2>Admin Console</h2>
-    <p>ProteinTracker — gym &amp; billing management.</p>
+    <p>Diet Tracker — gym &amp; billing management.</p>
     <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
     <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
     <button class="btn" id="signInBtn">Sign in</button>
@@ -84,7 +84,7 @@
   <div id="app">
     <div class="wrap">
       <div class="bar">
-        <div class="brand"><div class="logo">P</div><div><h1>ProteinTracker — Admin</h1><div class="role">Gyms, rates, logins &amp; billing</div></div></div>
+        <div class="brand"><div class="logo">P</div><div><h1>Diet Tracker — Admin</h1><div class="role">Gyms, rates, logins &amp; billing</div></div></div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
           <span id="recomputeMsg" style="font-size:12px; color:var(--muted)"></span>
           <button class="btn ghost" id="recomputeBtn" title="Recompute every member's access flag now">Recompute access</button>
@@ -259,12 +259,12 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
    Firebase console → Project settings → General → Your apps → Config.
    =========================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyCNdGi-vAYYAas6Ykh9k5pjEXg-0LLKI4g",
-  authDomain: "protein-tracker-for-50s.firebaseapp.com",
-  projectId: "protein-tracker-for-50s",
-  storageBucket: "protein-tracker-for-50s.firebasestorage.app",
-  messagingSenderId: "573755588416",
-  appId: "1:573755588416:web:203efa53244735ab1884a5",
+  apiKey: "PLACEHOLDER_NEW_FIREBASE_API_KEY",
+  authDomain: "PLACEHOLDER_PROJECT.firebaseapp.com",
+  projectId: "PLACEHOLDER_PROJECT",
+  storageBucket: "PLACEHOLDER_PROJECT.firebasestorage.app",
+  messagingSenderId: "PLACEHOLDER_SENDER_ID",
+  appId: "PLACEHOLDER_APP_ID",
 };
 
 /* 2) Your admin Firebase Auth uid(s). This only controls what the UI shows —
@@ -418,15 +418,15 @@ async function emailTrialNumbers(gymId, btn){
   }
   if (btn){ btn.disabled = false; btn.textContent = label; }
   const est = money(engaged * rate, curOf(g));
-  const subject = `How your ProteinTracker trial is going \u2014 ${monthName}`;
+  const subject = `How your Diet Tracker trial is going \u2014 ${monthName}`;
   const body =
     `Hi ${g.name},\n\n` +
-    `A quick update on your free ProteinTracker trial \u2014 it ends on ${endDate} (${days} day${days===1?"":"s"} left).\n\n` +
+    `A quick update on your free Diet Tracker trial \u2014 it ends on ${endDate} (${days} day${days===1?"":"s"} left).\n\n` +
     `Members actively using the app this month: ${engaged}\n` +
     `Rate after the trial: ${money(rate, curOf(g))} / active member\n` +
     `Estimated first bill: about ${est}/month \u2014 you only ever pay for members who actually use it.\n\n` +
     `If you'd like to keep it going, just reply and I'll switch you over to a paid plan. Happy to answer any questions.\n\n` +
-    `Thanks!\nProteinTracker`;
+    `Thanks!\nDiet Tracker`;
   const _cc = ((g.ccEmails) || []).join(",");
   const _ccP = _cc ? `&cc=${encodeURIComponent(_cc)}` : "";
   const _a = document.createElement("a");
@@ -980,7 +980,7 @@ function billGym(i){
   const _cc = ((_g && _g.ccEmails) || []).join(",");
   const _ccP = _cc ? `&cc=${encodeURIComponent(_cc)}` : "";
   const amt = money(r.amount || 0, r.currency);
-  const subject = `ProteinTracker invoice — ${BILL_PERIOD} — ${amt}`;
+  const subject = `Diet Tracker invoice — ${BILL_PERIOD} — ${amt}`;
   // PayNow is a Singapore-only method, so only offer it for SGD gyms. Overseas
   // (USD) gyms are asked to pay the Stripe invoice / by card instead.
   const payLine = String(r.currency||"sgd").toLowerCase() === "sgd"
@@ -988,12 +988,12 @@ function billGym(i){
     : `Please pay via the Stripe invoice we'll email you (card payment), or reply and we'll arrange a bank transfer.`;
   const body =
     `Hi ${r.name},\n\n` +
-    `Here is your ProteinTracker bill for ${BILL_PERIOD}.\n\n` +
+    `Here is your Diet Tracker bill for ${BILL_PERIOD}.\n\n` +
     `Members who used the app: ${r.engaged}\n` +
     `Rate: ${money(r.rate, r.currency)} / member\n` +
     `Amount due: ${amt}\n\n` +
     `${payLine}\n\n` +
-    `Thank you!\nProteinTracker`;
+    `Thank you!\nDiet Tracker`;
   const _a = document.createElement("a");
   _a.href = `mailto:${encodeURIComponent(r.billingEmail)}?subject=${encodeURIComponent(subject)}${_ccP}&body=${encodeURIComponent(body)}`;
   document.body.appendChild(_a); _a.click(); _a.remove();
