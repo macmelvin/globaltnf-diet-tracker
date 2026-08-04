@@ -66,7 +66,7 @@ exports.createGymOwner = onCall({ region: REGION }, async (req) => {
   // The continue URL makes the reset page show a "Continue" button back to the
   // gym portal login once they've set their password.
   const passwordSetupLink = await admin.auth().generatePasswordResetLink(email, {
-    url: "https://PLACEHOLDER_DOMAIN/gym-portal.html",
+    url: "https://global-tnf-diet-tracker.web.app/gym-portal.html",
     handleCodeInApp: false,
   });
 

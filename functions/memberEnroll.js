@@ -19,10 +19,10 @@ const REGION = "asia-southeast1";
 const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 
 // Public links (hosted on Firebase Hosting).
-const TRACKER_URL = "https://PLACEHOLDER_DOMAIN/protein-tracker";
-const GUIDE_URL = "https://PLACEHOLDER_DOMAIN/install";
-const INSTALL_VIDEO_URL = "https://PLACEHOLDER_DOMAIN/install-ios.mp4";
-const INSTALL_POSTER_URL = "https://PLACEHOLDER_DOMAIN/install-ios-poster.jpg";
+const TRACKER_URL = "https://global-tnf-diet-tracker.web.app/protein-tracker";
+const GUIDE_URL = "https://global-tnf-diet-tracker.web.app/install";
+const INSTALL_VIDEO_URL = "https://global-tnf-diet-tracker.web.app/install-ios.mp4";
+const INSTALL_POSTER_URL = "https://global-tnf-diet-tracker.web.app/install-ios-poster.jpg";
 const SUPPORT_EMAIL = "hello@strengthfocus.com";
 
 function escapeHtml(value) {

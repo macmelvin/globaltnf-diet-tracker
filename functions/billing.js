@@ -75,8 +75,8 @@ const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 
 const SELFPAY_PRICE_ID = "price_1Tt3APHDsXq2ou3cZ8EIEsvh"; // SGD S$2.99/mo recurring price
 const SELFPAY_PRICE_SGD = 2.99;
-const SELFPAY_SUCCESS_URL = "https://PLACEHOLDER_DOMAIN/subscribed.html";
-const SELFPAY_CANCEL_URL = "https://PLACEHOLDER_DOMAIN/subscribed.html?canceled=1";
+const SELFPAY_SUCCESS_URL = "https://global-tnf-diet-tracker.web.app/subscribed.html";
+const SELFPAY_CANCEL_URL = "https://global-tnf-diet-tracker.web.app/subscribed.html?canceled=1";
 
 // Self-pay monthly prices per currency, editable by admin at config/selfPay.
 // Until an admin saves a list, this seeded default applies. SGD-only for now

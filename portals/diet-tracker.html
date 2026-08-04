@@ -359,7 +359,7 @@
     // pending submission to testimonialSubmissions for review (see Firestore rules).
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-    const _cfg = { apiKey:"PLACEHOLDER_NEW_FIREBASE_API_KEY", authDomain:"PLACEHOLDER_PROJECT.web.app", projectId:"PLACEHOLDER_PROJECT", storageBucket:"PLACEHOLDER_PROJECT.firebasestorage.app", messagingSenderId:"PLACEHOLDER_SENDER_ID", appId:"PLACEHOLDER_APP_ID" };
+    const _cfg = { apiKey:"AIzaSyA2H3X7GqD7ldHjbmv3dCwPA29ZeetxtDM", authDomain:"global-tnf-diet-tracker.web.app", projectId:"global-tnf-diet-tracker", storageBucket:"global-tnf-diet-tracker.firebasestorage.app", messagingSenderId:"1087466849436", appId:"1:1087466849436:web:ad0e69a018b069987d5959" };
     const _app = getApps().length ? getApp() : initializeApp(_cfg);
     const _sdb = getFirestore(_app);
     const _g = id => document.getElementById(id);
@@ -660,7 +660,7 @@ import { getFunctions, httpsCallable }
   from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
 const firebaseConfig = {
-  apiKey: "PLACEHOLDER_NEW_FIREBASE_API_KEY",
+  apiKey: "AIzaSyA2H3X7GqD7ldHjbmv3dCwPA29ZeetxtDM",
   // authDomain matches the domain this site is actually served from (web.app),
   // so the whole auth flow — handler page AND session storage — stays SAME-ORIGIN.
   // That avoids the hidden cross-domain iframe (firebaseapp.com) that mobile
@@ -668,11 +668,11 @@ const firebaseConfig = {
   // session on phones and bouncing users back to the homepage after sign-in.
   // Requires web.app/__/auth/handler to be registered in the Google OAuth client
   // (done) so there's no redirect_uri_mismatch.
-  authDomain: "PLACEHOLDER_PROJECT.web.app",
-  projectId: "PLACEHOLDER_PROJECT",
-  storageBucket: "PLACEHOLDER_PROJECT.firebasestorage.app",
-  messagingSenderId: "PLACEHOLDER_SENDER_ID",
-  appId: "PLACEHOLDER_APP_ID",
+  authDomain: "global-tnf-diet-tracker.web.app",
+  projectId: "global-tnf-diet-tracker",
+  storageBucket: "global-tnf-diet-tracker.firebasestorage.app",
+  messagingSenderId: "1087466849436",
+  appId: "1:1087466849436:web:ad0e69a018b069987d5959",
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
