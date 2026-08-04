@@ -223,12 +223,16 @@ exports.engagementReport = onCall({ region: REGION }, async (req) => {
       .where("gymId", "==", gymId)
       .where("status", "==", "active")
       .get();
-    let engaged = 0;
+    let engaged = 0, activeTotal = 0;
     for (const e of enr.docs) {
       const uid = e.ref.parent.parent && e.ref.parent.parent.id;
       if (!uid) continue;
+      activeTotal++;
       if (await isEngaged(db, uid, start, end, { demo: gym.demoMode === true })) engaged++;
     }
+    // REWARD MODEL: members who hit 3+ logs on 3+ days are free. The gym is
+    // only billed for active members who did NOT reach that bar this month.
+    const notEngaged = activeTotal - engaged;
     const rate = Number(gym.pricePerMemberUsd || 0);
     // Trial gyms (and paused gyms) are not billed.
     const billingActive = gym.billingActive !== false && (gym.status || "active") === "active";
@@ -237,11 +241,12 @@ exports.engagementReport = onCall({ region: REGION }, async (req) => {
       name: gym.name || gymId,
       billingEmail: gym.billingEmail || "",
       currency: (gym.currency || "sgd"),
-      active: enr.size,
+      active: activeTotal,
       engaged,
+      notEngaged,
       rate,
       billingActive,
-      amount: billingActive ? Math.round(engaged * rate * 100) / 100 : 0,
+      amount: billingActive ? Math.round(notEngaged * rate * 100) / 100 : 0,
       lastBilledPeriod: gym.lastBilledPeriod || null,
       demo: gym.demoMode === true,
     });
@@ -275,13 +280,16 @@ exports.myGymEngagement = onCall({ region: REGION }, async (req) => {
     .where("gymId", "==", gymId)
     .where("status", "==", "active")
     .get();
-  let engaged = 0;
+  let engaged = 0, activeTotal = 0;
   for (const e of enr.docs) {
     const uid = e.ref.parent.parent && e.ref.parent.parent.id;
     if (!uid) continue;
+    activeTotal++;
     if (await isEngaged(db, uid, start, end, { demo })) engaged++;
   }
-  return { active: enr.size, engaged };
+  // REWARD MODEL: engaged members (3+ logs on 3+ days) are free; the rest count
+  // toward the bill.
+  return { active: activeTotal, engaged, notEngaged: activeTotal - engaged };
 });
 
 // ---------------------------------------------------------------------------

@@ -153,12 +153,13 @@
       <div class="panel">
         <p style="font-size:13px; color:var(--ink-2); margin:0 0 10px">
           The amount to invoice each gym — read it off and bill them your way (e.g. PayNow), no Stripe needed.
-          <b>Used app</b> = members who logged 3+ entries on at least 3 separate days that month; only they are billed.
+          <b>Reward model:</b> members who log 3+ entries on at least 3 separate days that month are <b>free</b> —
+          the gym is only billed for active members who didn't reach that bar. More real usage = a smaller bill.
           Trial or paused gyms show <b>not billed</b>. Use <b>Last month</b> for the completed month you'd normally invoice.
         </p>
         <table>
-          <thead><tr><th>Gym</th><th>Billing email</th><th class="num">Used app</th><th class="num">Rate</th><th class="num">Amount due</th><th></th></tr></thead>
-          <tbody id="engRows"><tr><td colspan="6" style="color:var(--muted); padding:16px 12px">Click <b>This month</b> or <b>Last month</b> to compute what each gym owes.</td></tr></tbody>
+          <thead><tr><th>Gym</th><th>Billing email</th><th class="num">Used app (free)</th><th class="num">Billed</th><th class="num">Rate</th><th class="num">Amount due</th><th></th></tr></thead>
+          <tbody id="engRows"><tr><td colspan="7" style="color:var(--muted); padding:16px 12px">Click <b>This month</b> or <b>Last month</b> to compute what each gym owes.</td></tr></tbody>
         </table>
       </div>
 
@@ -405,26 +406,28 @@ async function emailTrialNumbers(gymId, btn){
   const monthName = new Date().toLocaleDateString(undefined,{month:"long",year:"numeric"});
   const label = btn ? btn.textContent : "";
   if (btn){ btn.disabled = true; btn.textContent = "Loading\u2026"; }
-  let engaged = 0;
+  let engaged = 0, notEngaged = 0;
   try {
     const fn = httpsCallable(fns, "engagementReport");
     const res = await fn({ period: "current" });
     const list = (res.data && res.data.rows) || [];
     const row = list.find(r => r.gymId === gymId);
     engaged = row ? Number(row.engaged || 0) : 0;
+    notEngaged = row ? Number(row.notEngaged ?? Math.max(0,(row.active||0)-engaged)) : 0;
   } catch(e){
     if (btn){ btn.disabled = false; btn.textContent = label; }
     alert("Couldn't fetch live numbers: " + friendly(e)); return;
   }
   if (btn){ btn.disabled = false; btn.textContent = label; }
-  const est = money(engaged * rate, curOf(g));
+  const est = money(notEngaged * rate, curOf(g));
   const subject = `How your Diet Tracker trial is going \u2014 ${monthName}`;
   const body =
     `Hi ${g.name},\n\n` +
     `A quick update on your free Diet Tracker trial \u2014 it ends on ${endDate} (${days} day${days===1?"":"s"} left).\n\n` +
-    `Members actively using the app this month: ${engaged}\n` +
-    `Rate after the trial: ${money(rate, curOf(g))} / active member\n` +
-    `Estimated first bill: about ${est}/month \u2014 you only ever pay for members who actually use it.\n\n` +
+    `Members actively using the app this month (3+ logs on 3+ days \u2014 these are FREE): ${engaged}\n` +
+    `Members who haven't hit that bar yet (these are the ones that count toward your bill): ${notEngaged}\n` +
+    `Rate after the trial: ${money(rate, curOf(g))} / member who doesn't hit the usage bar\n` +
+    `Estimated first bill: about ${est}/month \u2014 you only ever pay for members who AREN'T actively using it. The more your members use Diet Tracker, the less you pay.\n\n` +
     `If you'd like to keep it going, just reply and I'll switch you over to a paid plan. Happy to answer any questions.\n\n` +
     `Thanks!\nDiet Tracker`;
   const _cc = ((g.ccEmails) || []).join(",");
@@ -920,7 +923,7 @@ $("clearTagBtn").addEventListener("click", async () => {
 let BILL_ROWS = [], BILL_PERIOD = "";
 async function loadBilling(which){
   const el = $("engRows");
-  el.innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:16px 12px">Computing…</td></tr>`;
+  el.innerHTML = `<tr><td colspan="7" style="color:var(--muted); padding:16px 12px">Computing…</td></tr>`;
   try {
     const fn = httpsCallable(fns, "engagementReport");
     const res = await fn({ period: which });
@@ -928,12 +931,12 @@ async function loadBilling(which){
     BILL_PERIOD = (res.data && res.data.period) || "";
     renderBilling();
   } catch(e){
-    el.innerHTML = `<tr><td colspan="6" style="color:var(--bad); padding:16px 12px">Couldn't load: ${friendly(e)}</td></tr>`;
+    el.innerHTML = `<tr><td colspan="7" style="color:var(--bad); padding:16px 12px">Couldn't load: ${friendly(e)}</td></tr>`;
   }
 }
 function renderBilling(){
   const el = $("engRows");
-  if (!BILL_ROWS.length) { el.innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:16px 12px">No gyms yet.</td></tr>`; return; }
+  if (!BILL_ROWS.length) { el.innerHTML = `<tr><td colspan="7" style="color:var(--muted); padding:16px 12px">No gyms yet.</td></tr>`; return; }
   const totalPairs = [];
   const body = BILL_ROWS.map((r, i) => {
     let amtCell, action = "";
@@ -957,13 +960,14 @@ function renderBilling(){
     return `<tr>
       <td class="name">${r.name}${r.demo?`<span style="display:inline-block;font-size:10px;font-weight:700;color:#7b46d6;background:#efe8fb;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle">DEMO</span>`:""}</td>
       <td style="color:var(--ink-2)">${r.billingEmail || "—"}</td>
-      <td class="num">${r.engaged}</td>
+      <td class="num" style="color:var(--good)">${r.engaged}</td>
+      <td class="num">${r.notEngaged ?? Math.max(0,(r.active||0)-(r.engaged||0))}</td>
       <td class="num">${money(r.rate, r.currency)}</td>
       <td class="num">${amtCell}</td>
       <td>${action}</td>
     </tr>`;
   }).join("");
-  const totalRow = `<tr style="font-weight:700; background:var(--page)"><td colspan="4" style="text-align:right">Total to invoice · ${BILL_PERIOD}</td><td class="num">${moneyByCurrency(totalPairs)}</td><td></td></tr>`;
+  const totalRow = `<tr style="font-weight:700; background:var(--page)"><td colspan="5" style="text-align:right">Total to invoice · ${BILL_PERIOD}</td><td class="num">${moneyByCurrency(totalPairs)}</td><td></td></tr>`;
   el.innerHTML = body + totalRow;
   document.querySelectorAll('[data-bill]').forEach(b => b.addEventListener("click", () => billGym(parseInt(b.dataset.bill,10))));
   document.querySelectorAll('[data-mark]').forEach(b => b.addEventListener("click", () => markBilled(parseInt(b.dataset.mark,10))));

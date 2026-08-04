@@ -312,10 +312,13 @@ function render(){
     $("total").innerHTML = '—';
     $("totalFoot").textContent = "Self-pay members · billed individually via Stripe";
   } else {
+    // Worst-case estimate (as if nobody had logged yet) until loadEngagement()
+    // refines it with the real "not yet engaged" count, which is what's
+    // actually billed — engaged members are free.
     const billable = BILLING_ACTIVE ? active.length * PRICE : 0;
     $("total").innerHTML = money(billable) + ' <small>SGD / mo</small>';
     $("totalFoot").textContent = BILLING_ACTIVE
-      ? (active.length + " active × " + money(PRICE))
+      ? ("up to " + active.length + " × " + money(PRICE) + " — loading usage…")
       : ("Free during trial · " + active.length + " active");
   }
   $("activeCount").textContent = active.length;
@@ -369,8 +372,8 @@ function render(){
     ? `<br><span class="muted">${PENDING.length} pending — invited but ${PENDING.length===1?"hasn't":"haven't"} signed into the app yet. They stay on this list and move up automatically the moment they create an account with that email. A pending member isn't billed until they join and you switch them Active.</span>`
     : ``;
   const billingLine = BILLING_ACTIVE
-    ? `Your billing is calculated straight from this list: only members switched <b>Active</b> who complete at least <b>3 scans a day on 3 different days within the month</b> are charged, at ${money(PRICE)}/member/month.`
-    : `You're on a free trial — nothing is billed yet. This list shows who would be charged (${money(PRICE)}/member/month) once your plan is activated.`;
+    ? `Your billing rewards engagement: any <b>Active</b> member who completes at least <b>3 scans a day on 3 different days within the month</b> is <b>free</b> — see "Used the app this month" above. You're only charged ${money(PRICE)}/member/month for active members who haven't hit that bar yet.`
+    : `You're on a free trial — nothing is billed yet. Once your plan is activated, active members who log 3+ scans on 3+ days a month stay free, and you're only charged ${money(PRICE)}/member/month for the rest.`;
   $("note").innerHTML = hasAny
     ? billingLine + pendingNote
     : `No members yet. When a member starts a training package and is enrolled in your gym, they'll appear here.`;
@@ -381,8 +384,24 @@ async function loadEngagement(){
     const fn = httpsCallable(fns, "myGymEngagement");
     const res = await fn({});
     const d = res.data || {};
-    $("engCount").textContent = (d.engaged ?? 0);
-    $("engFoot").textContent = "of " + (d.active ?? 0) + " active this month";
+    const activeTotal = d.active ?? 0;
+    const engaged = d.engaged ?? 0;
+    const notEngaged = d.notEngaged ?? Math.max(0, activeTotal - engaged);
+    $("engCount").textContent = engaged;
+    $("engFoot").textContent = "of " + activeTotal + " active this month";
+
+    // Now that we know the real usage split, replace the worst-case estimate
+    // with the actual amount owed: engaged members are free, only the
+    // not-yet-engaged ones are billed.
+    if (GYM_ID !== "Public-01") {
+      if (BILLING_ACTIVE) {
+        const billable = notEngaged * PRICE;
+        $("total").innerHTML = money(billable) + ' <small>SGD / mo</small>';
+        $("totalFoot").textContent = notEngaged + " not-yet-engaged × " + money(PRICE) + " (" + engaged + " engaged & free)";
+      } else {
+        $("totalFoot").textContent = "Free during trial · " + activeTotal + " active";
+      }
+    }
   } catch (e) {
     $("engCount").textContent = "—";
     $("engFoot").textContent = "usage unavailable";

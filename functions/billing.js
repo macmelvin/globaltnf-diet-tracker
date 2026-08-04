@@ -119,19 +119,23 @@ function periodBounds(periodId) {
   const [y, m] = periodId.split("-").map(Number);
   return { start: new Date(Date.UTC(y, m - 1, 1)), end: new Date(Date.UTC(y, m, 1)) };
 }
-async function countEngaged(gymId, start, end, demo = false) {
+// REWARD MODEL: members who hit the 3/3 engagement bar are FREE — the gym is
+// only billed for active members who did NOT reach it that month. Returns all
+// three counts so callers can show "X used it (free) / Y billed" clearly.
+async function countEngagement(gymId, start, end, demo = false) {
   const enr = await db
     .collectionGroup("enrollments")
     .where("gymId", "==", gymId)
     .where("status", "==", "active")
     .get();
-  let engaged = 0;
+  let total = 0, engaged = 0;
   for (const doc of enr.docs) {
     const uid = doc.ref.parent.parent && doc.ref.parent.parent.id;
     if (!uid) continue;
+    total++;
     if (await isEngaged(db, uid, start, end, { demo })) engaged++;
   }
-  return engaged;
+  return { total, engaged, notEngaged: total - engaged };
 }
 async function invoiceGymForPeriod(sk, gymId, period) {
   if (gymId === PUBLIC_GYM_ID) return "public-selfpay-skip";
@@ -151,7 +155,9 @@ async function invoiceGymForPeriod(sk, gymId, period) {
   const currency = normCurrency(gym.currency);
   const dec = currencyDecimals(currency);
   const { start: periodStart, end: periodEnd } = periodBounds(period);
-  const activeCount = await countEngaged(gymId, periodStart, periodEnd, gym.demoMode === true);
+  // REWARD MODEL: engaged members (3+ entries on 3+ days) are free. The gym is
+  // only billed for active members who did NOT reach that bar this month.
+  const { notEngaged: activeCount } = await countEngagement(gymId, periodStart, periodEnd, gym.demoMode === true);
   if (activeCount <= 0 || price <= 0) return "nothing-to-bill";
   const total = Number((activeCount * price).toFixed(dec));
   const amountCents = toMinorUnits(total, currency);
@@ -179,7 +185,7 @@ async function invoiceGymForPeriod(sk, gymId, period) {
       invoice: invoice.id,
       currency,
       amount: amountCents,
-      description: `Diet Tracker — ${period}: ${activeCount} member${activeCount > 1 ? "s" : ""} who used the app × ${fmtMoney(price, currency)}`,
+      description: `Diet Tracker — ${period}: ${activeCount} member${activeCount > 1 ? "s" : ""} who didn't hit 3+ logs on 3+ days (engaged members are free) × ${fmtMoney(price, currency)}`,
       metadata: { gymId, period },
     },
     { idempotencyKey: `${idem}_item` }
