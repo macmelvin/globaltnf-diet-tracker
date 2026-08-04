@@ -19,7 +19,7 @@ if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 const REGION = "asia-southeast1";
 // TODO: replace with the client's own Firebase Auth UID once their admin account exists.
-const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
+const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 const PUBLIC_GYM_ID = "Public-01";
 const PUBLIC_GYM_NAME = "Public-Self Paying Individual";
 const TRIAL_DAYS = 30; // free trial granted on first sign-up (web/app), once per account

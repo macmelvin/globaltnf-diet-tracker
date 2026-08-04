@@ -16,7 +16,7 @@ const db = admin.firestore();
 
 const REGION = "asia-southeast1";
 // TODO: replace with the client's own Firebase Auth UID once their admin account exists.
-const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
+const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 
 // Public links (hosted on Firebase Hosting).
 const TRACKER_URL = "https://global-tnf-diet-tracker.web.app/protein-tracker";

@@ -22,7 +22,7 @@ const REGION = "asia-southeast1";
 
 // Only these accounts may create gym logins.
 // TODO: replace with the client's own Firebase Auth UID once their admin account exists.
-const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
+const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 
 exports.createGymOwner = onCall({ region: REGION }, async (req) => {
   if (!req.auth || !ADMIN_UIDS.includes(req.auth.uid)) {

@@ -71,7 +71,7 @@ function fmtMoney(amount, currency) {
 const REGION = "asia-southeast1";
 const INVOICE_DUE_DAYS = 7;
 // TODO: replace with the client's own Firebase Auth UID once their admin account exists.
-const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
+const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 
 const SELFPAY_PRICE_ID = "price_1Tt3APHDsXq2ou3cZ8EIEsvh"; // SGD S$2.99/mo recurring price
 const SELFPAY_PRICE_SGD = 2.99;

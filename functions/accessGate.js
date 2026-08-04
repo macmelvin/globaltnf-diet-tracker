@@ -27,7 +27,7 @@ const db = admin.firestore();
 
 const REGION = "asia-southeast1";
 // TODO: replace with the client's own Firebase Auth UID once their admin account exists.
-const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
+const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 const PUBLIC_GYM_ID = "Public-01"; // self-pay roster bucket; never grants access on its own
 
 /** Recompute + persist memberAccess/{uid}.active for one member. Writes on change only. */
