@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProteinTracker — Gym Portal</title>
+<style>
+  :root{ --surface:#fcfcfb; --page:#f9f9f7; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,0.10); --brand:#2a78d6; --active:#0ca30c; --inactive:#898781; --warn:#eda100; --bad:#d03b3b; }
+  @media (prefers-color-scheme: dark){ :root{ --surface:#1a1a19; --page:#0d0d0d; --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,0.12); --brand:#3987e5; } }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--page); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:900px; margin:0 auto; padding:24px 20px 64px; }
+  .bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .logo{ width:30px; height:30px; border-radius:8px; background:var(--brand); color:#fff; display:grid; place-items:center; font-weight:700; }
+  .brand h1{ font-size:17px; margin:0; }
+  .brand .role{ font-size:12px; color:var(--muted); }
+  button{ font-family:inherit; cursor:pointer; }
+  .btn{ font-size:13px; font-weight:650; border:1px solid var(--brand); background:var(--brand); color:#fff; border-radius:9px; padding:9px 15px; }
+  .btn.ghost{ background:var(--surface); color:var(--ink); border-color:var(--border); font-weight:600; }
+  .btn:hover{ filter:brightness(1.05); }
+
+  /* login */
+  #login{ max-width:360px; margin:8vh auto 0; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 24px; }
+  #login h2{ margin:0 0 4px; font-size:18px; }
+  #login p{ margin:0 0 18px; font-size:13px; color:var(--ink-2); }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:12px; color:var(--ink-2); margin-bottom:4px; }
+  .field input{ width:100%; font-family:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--border); border-radius:9px; background:var(--page); color:var(--ink); }
+  #login .btn{ width:100%; margin-top:6px; padding:11px; }
+  .link{ background:none; border:none; color:var(--brand); font-size:12px; padding:8px 0 0; }
+  .err{ color:var(--bad); font-size:12px; min-height:16px; margin-top:8px; }
+
+  .sub{ color:var(--ink-2); font-size:13px; margin:12px 0 20px; }
+  .summary{ display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:12px; margin-bottom:6px; }
+  @media (max-width:620px){ .summary{ grid-template-columns:1fr; } }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px 17px; }
+  .card.bill{ background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 8%,var(--surface)),var(--surface)); }
+  .card .label{ font-size:12px; color:var(--ink-2); margin-bottom:6px; }
+  .card .value{ font-size:26px; font-weight:670; letter-spacing:-0.02em; }
+  .card .value small{ font-size:13px; font-weight:500; color:var(--muted); }
+  .card .foot{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .card.flagged .value{ color:var(--warn); }
+
+  h2.sec{ font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin:24px 0 10px; font-weight:600; }
+  table{ width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:13px; }
+  th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600; padding:11px 14px; border-bottom:1px solid var(--grid); }
+  td{ padding:11px 14px; border-bottom:1px solid var(--grid); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  .name{ font-weight:550; }
+  .pill{ font-size:12px; font-weight:600; padding:3px 9px; border-radius:999px; }
+  .pill.on{ color:var(--active); background:color-mix(in srgb,var(--active) 13%,transparent); }
+  .pill.off{ color:var(--inactive); background:color-mix(in srgb,var(--inactive) 16%,transparent); }
+  .pill.pending{ color:var(--warn); background:color-mix(in srgb,var(--warn) 16%,transparent); }
+  .rm{ font:inherit; font-size:12px; font-weight:600; color:var(--bad); background:none; border:none; cursor:pointer; padding:4px 6px; }
+  .lnk{ font:inherit; font-size:12px; font-weight:600; color:var(--brand); background:none; border:none; cursor:pointer; padding:4px 6px; }
+  .lnk:disabled{ color:var(--inactive); cursor:default; }
+  .rm:hover{ text-decoration:underline; }
+  .switch{ position:relative; display:inline-block; width:42px; height:24px; vertical-align:middle; margin-right:8px; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; cursor:pointer; inset:0; background:var(--inactive); border-radius:999px; transition:.15s; }
+  .slider:before{ content:""; position:absolute; height:18px; width:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+  input:checked + .slider{ background:var(--active); }
+  input:checked + .slider:before{ transform:translateX(18px); }
+  .muted{ color:var(--muted); }
+  .note{ font-size:12px; color:var(--ink-2); background:color-mix(in srgb,var(--brand) 8%,transparent); border:1px solid color-mix(in srgb,var(--brand) 22%,transparent); border-radius:10px; padding:10px 14px; margin-top:16px; }
+  #app{ display:none; }
+  .spinner{ text-align:center; color:var(--muted); padding:40px; font-size:13px; }
+</style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login">
+    <h2>Gym Portal</h2>
+    <p>Sign in to manage the members you sponsor.</p>
+    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="signInBtn">Sign in</button>
+    <button class="link" id="resetBtn">Forgot password?</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="wrap">
+      <div class="bar">
+        <div class="brand">
+          <div class="logo">P</div>
+          <div><h1 id="gymName">Gym Portal</h1><div class="role">Manage the members you sponsor</div></div>
+        </div>
+        <button class="btn ghost" id="signOutBtn">Sign out</button>
+      </div>
+      <p class="sub" id="hello"></p>
+      <div id="trialBanner" style="display:none"></div>
+
+      <div class="summary">
+        <div class="card bill">
+          <div class="label">Your current monthly total</div>
+          <div class="value" id="total">—</div>
+          <div class="foot" id="totalFoot">active members × your rate</div>
+        </div>
+        <div class="card">
+          <div class="label">Active (sponsored) members</div>
+          <div class="value" id="activeCount">—</div>
+          <div class="foot" id="inactiveFoot"></div>
+        </div>
+        <div class="card flagged">
+          <div class="label">Needs review</div>
+          <div class="value" id="flagCount">—</div>
+          <div class="foot">active but quiet 45+ days</div>
+        </div>
+        <div class="card">
+          <div class="label">Used the app this month</div>
+          <div class="value" id="engCount">—</div>
+          <div class="foot" id="engFoot">of your active members</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:24px 0 10px;">
+        <h2 class="sec" style="margin:0">Your members</h2>
+        <button class="btn" id="addBtn">+ Add member</button>
+      </div>
+      <div id="addRow" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+        <input type="text" id="newName" placeholder="Member's name" maxlength="80" autocomplete="name" style="font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--page);color:var(--ink);min-width:180px;">
+        <input type="email" id="newEmail" placeholder="Member's email" style="font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--page);color:var(--ink);min-width:220px;">
+        <select id="newStatus" style="font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--page);color:var(--ink);">
+          <option value="active">Active (billed)</option>
+          <option value="inactive">Inactive (not billed)</option>
+        </select>
+        <button class="btn" id="enrollBtn">Enroll</button>
+        <button class="btn ghost" id="cancelAdd">Cancel</button>
+        <div style="flex:1 1 100%;font-size:12px;color:var(--ink-2);background:color-mix(in srgb,var(--brand) 8%,transparent);border:1px solid color-mix(in srgb,var(--brand) 22%,transparent);border-radius:10px;padding:10px 14px;line-height:1.4;">
+          📧 When you enroll a member, they automatically get an email with the app download link and install steps. Ask them to check their <b>spam / junk folder</b> if it doesn’t arrive within a few minutes.
+        </div>
+      </div>
+      <div id="enrollMsg" style="font-size:13px;margin-bottom:10px;min-height:16px;"></div>
+      <div id="rosterWrap">
+        <div class="spinner" id="rosterSpin">Loading your roster…</div>
+        <table id="rosterTable" style="display:none">
+          <thead><tr><th>Member</th><th>Coaching since</th><th>Sponsored &amp; billing</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+         sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, deleteDoc, collection, collectionGroup, query, where, getDocs,
+         serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
+/* ===========================================================================
+   1) PASTE YOUR FIREBASE WEB CONFIG HERE
+   Firebase console → Project settings (gear) → General → "Your apps" →
+   SDK setup and configuration → Config. It's the public web config (already
+   shipped in your app) — safe to include in a client file.
+   projectId / authDomain are pre-filled from your project; fill the rest.
+   =========================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCNdGi-vAYYAas6Ykh9k5pjEXg-0LLKI4g",
+  authDomain: "protein-tracker-for-50s.firebaseapp.com",
+  projectId: "protein-tracker-for-50s",
+  storageBucket: "protein-tracker-for-50s.firebasestorage.app",
+  messagingSenderId: "573755588416",
+  appId: "1:573755588416:web:203efa53244735ab1884a5",
+};
+
+const app = initializeApp(firebaseConfig, "gymPortal"); // own auth store, separate from the admin portal
+const auth = getAuth(app);
+const db = getFirestore(app);
+const fns = getFunctions(app, "asia-southeast1");
+
+const $ = id => document.getElementById(id);
+const money = (n, cur="S$") => cur + n.toFixed(2);
+
+// ---- auth UI ----
+$("signInBtn").addEventListener("click", async () => {
+  $("loginErr").textContent = "";
+  try {
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+  } catch (e) { $("loginErr").textContent = friendly(e); }
+});
+$("password").addEventListener("keydown", e => { if (e.key === "Enter") $("signInBtn").click(); });
+$("resetBtn").addEventListener("click", async () => {
+  $("loginErr").textContent = "";
+  const email = $("email").value.trim();
+  if (!email) { $("loginErr").textContent = "Enter your email first, then tap Forgot password."; return; }
+  try { await sendPasswordResetEmail(auth, email); $("loginErr").style.color = "var(--active)";
+        $("loginErr").textContent = "Reset link sent — check your email."; }
+  catch (e) { $("loginErr").textContent = friendly(e); }
+});
+$("signOutBtn").addEventListener("click", () => signOut(auth));
+
+function friendly(e){
+  const m = (e && e.code) || "";
+  if (m.includes("wrong-password") || m.includes("invalid-credential")) return "Wrong email or password.";
+  if (m.includes("user-not-found")) return "No account for that email.";
+  if (m.includes("too-many-requests")) return "Too many attempts — try again shortly.";
+  return (e && e.message) ? e.message : "Something went wrong.";
+}
+
+// ---- session ----
+let GYM_ID = null, PRICE = 0, GYM_NAME = "", BILLING_ACTIVE = true;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { show("login"); return; }
+  try {
+    const token = await user.getIdTokenResult(true);
+    GYM_ID = token.claims.gymId || null;
+    if (!GYM_ID) {
+      show("login");
+      $("loginErr").style.color = "var(--bad)";
+      $("loginErr").textContent = "This account isn't set up as a gym login yet. Please contact your ProteinTracker admin.";
+      await signOut(auth);
+      return;
+    }
+    show("app");
+    await loadGym();
+    await loadRoster();
+    loadEngagement();
+  } catch (e) {
+    show("login");
+    $("loginErr").style.color = "var(--bad)";
+    $("loginErr").textContent = "Something went wrong loading your portal. Please try again.";
+  }
+});
+
+function show(which){
+  $("login").style.display = which === "login" ? "block" : "none";
+  $("app").style.display   = which === "app" ? "block" : "none";
+}
+
+async function loadGym(){
+  const g = await getDoc(doc(db, "gyms", GYM_ID));
+  let trialEndsAt = 0, billingActive = true;
+  if (g.exists()) {
+    const d = g.data();
+    GYM_NAME = d.name || GYM_ID;
+    PRICE = Number(d.pricePerMemberUsd ?? 0);   // treated as SGD
+    trialEndsAt = Number(d.trialEndsAt || 0);
+    billingActive = d.billingActive !== false;  // false only during trial / pre-conversion
+  }
+  $("gymName").textContent = GYM_NAME + " — Gym Portal";
+  $("hello").textContent = (GYM_ID === "Public-01")
+    ? "Welcome. These are self-pay members — each pays individually via Stripe, so there's no pause switch here. Access turns off automatically when a member's subscription lapses."
+    : "Welcome, " + GYM_NAME + ". Toggle a member off the moment their training package ends — that's what stops your billing for them.";
+
+  BILLING_ACTIVE = billingActive;
+
+  // Trial banner for the gym owner.
+  const banner = $("trialBanner");
+  const base = "display:block;border-radius:10px;padding:12px 14px;margin:4px 0 18px;font-size:13px;font-weight:600;";
+  const now = Date.now();
+  if (!billingActive && trialEndsAt > now) {
+    const daysLeft = Math.max(1, Math.ceil((trialEndsAt - now) / 86400000));
+    banner.style.cssText = base + "color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)";
+    banner.textContent = "Free trial — " + daysLeft + " day" + (daysLeft===1?"":"s") + " left. Your members have full access and you're not billed during the trial.";
+  } else if (!billingActive) {
+    banner.style.cssText = base + "color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)";
+    banner.textContent = "Your free trial has ended. Your members still have full access, and you won't be billed until your plan is activated.";
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+function daysSince(ts){
+  if (!ts) return null;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function seenText(ts){
+  const d = daysSince(ts); if (d === null) return "—";
+  if (d <= 0) return "today"; if (d === 1) return "yesterday"; return d + " days ago";
+}
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
+}
+
+let ROSTER = [];
+let PENDING = [];
+async function loadRoster(){
+  $("rosterSpin").style.display = "block";
+  $("rosterTable").style.display = "none";
+  // Enrolled members (they already have an app account).
+  const q = query(collectionGroup(db, "enrollments"), where("gymId", "==", GYM_ID));
+  const snap = await getDocs(q);
+  ROSTER = snap.docs.map(d => ({ ref: d.ref, pending: false, ...d.data() }));
+  // Pending members: invited by email but haven't created their app account yet.
+  try {
+    const pq = query(collection(db, "pendingEnrollments"), where("gymId", "==", GYM_ID));
+    const psnap = await getDocs(pq);
+    PENDING = psnap.docs.map(d => { const x = d.data(); return { pending: true, ref: d.ref, memberEmail: x.email, ...x }; });
+  } catch (e) { PENDING = []; }
+  render();
+  $("rosterSpin").style.display = "none";
+  $("rosterTable").style.display = "table";
+}
+
+function render(){
+  const isPublic = (GYM_ID === "Public-01");   // self-pay bucket: no gym pause, no gym invoice
+  const active = ROSTER.filter(m => m.status === "active");
+  const inactive = ROSTER.filter(m => m.status !== "active");
+  const flagged = active.filter(m => (daysSince(m.coachSince) ?? 0) >= 45 && (daysSince(m.lastActiveAt ?? m.coachSince) ?? 0) >= 45);
+
+  if (isPublic) {
+    $("total").innerHTML = '—';
+    $("totalFoot").textContent = "Self-pay members · billed individually via Stripe";
+  } else {
+    const billable = BILLING_ACTIVE ? active.length * PRICE : 0;
+    $("total").innerHTML = money(billable) + ' <small>SGD / mo</small>';
+    $("totalFoot").textContent = BILLING_ACTIVE
+      ? (active.length + " active × " + money(PRICE))
+      : ("Free during trial · " + active.length + " active");
+  }
+  $("activeCount").textContent = active.length;
+  $("inactiveFoot").textContent = inactive.length + " inactive";
+  $("flagCount").textContent = flagged.length;
+
+  const enrolledRows = ROSTER.map((m, i) => {
+    const on = m.status === "active";
+    const memberLabel = m.memberName ? `${esc(m.memberName)}<br><span class="muted">${esc(m.memberEmail || "")}</span>` : esc(m.memberEmail || "(member)");
+    const statusCell = isPublic
+      ? `<span class="pill ${on?"on":"off"}">${on?"Active · self-pay":"Inactive · lapsed"}</span>`
+      : `<label class="switch"><input type="checkbox" ${on?"checked":""} data-i="${i}"><span class="slider"></span></label>
+        <span class="pill ${on?"on":"off"}">${on?(BILLING_ACTIVE?("Active · "+money(PRICE)+"/mo"):"Active · free (trial)"):"Inactive · not billed"}</span>`;
+    return `<tr>
+      <td><span class="name">${memberLabel}</span></td>
+      <td class="muted">${seenText(m.coachSince)}</td>
+      <td>${statusCell}</td>
+      <td style="text-align:right"><button class="lnk" data-resend-enroll="${i}">Resend email</button> <button class="rm" data-del-enroll="${i}">Remove</button></td>
+    </tr>`;
+  }).join("");
+
+  const pendingRows = PENDING.map((p, i) => `<tr>
+      <td><span class="name">${p.memberName ? `${esc(p.memberName)}<br><span class="muted">${esc(p.memberEmail || p.email || "")}</span>` : esc(p.memberEmail || p.email || "(member)")}</span></td>
+      <td class="muted">invited ${seenText(p.createdAt)}</td>
+      <td><span class="pill pending">Pending · hasn't joined the app yet</span></td>
+      <td style="text-align:right"><button class="lnk" data-resend-pending="${i}">Resend email</button> <button class="rm" data-del-pending="${i}">Remove</button></td>
+    </tr>`).join("");
+
+  $("rows").innerHTML = enrolledRows + pendingRows;
+
+  document.querySelectorAll('#rows input[type=checkbox]').forEach(cb => {
+    cb.addEventListener("change", () => toggle(parseInt(cb.dataset.i,10), cb));
+  });
+
+  document.querySelectorAll('#rows [data-del-enroll]').forEach(b => {
+    b.addEventListener("click", () => removeEnrolled(parseInt(b.dataset.delEnroll,10), b));
+  });
+  document.querySelectorAll('#rows [data-del-pending]').forEach(b => {
+    b.addEventListener("click", () => removePending(parseInt(b.dataset.delPending,10), b));
+  });
+
+  document.querySelectorAll('#rows [data-resend-enroll]').forEach(b => {
+    b.addEventListener("click", () => { const m = ROSTER[parseInt(b.dataset.resendEnroll,10)]; if (m) resendWelcome(m.memberEmail, b); });
+  });
+  document.querySelectorAll('#rows [data-resend-pending]').forEach(b => {
+    b.addEventListener("click", () => { const p = PENDING[parseInt(b.dataset.resendPending,10)]; if (p) resendWelcome(p.memberEmail || p.email, b); });
+  });
+
+  const hasAny = ROSTER.length || PENDING.length;
+  const pendingNote = PENDING.length
+    ? `<br><span class="muted">${PENDING.length} pending — invited but ${PENDING.length===1?"hasn't":"haven't"} signed into the app yet. They stay on this list and move up automatically the moment they create an account with that email. A pending member isn't billed until they join and you switch them Active.</span>`
+    : ``;
+  const billingLine = BILLING_ACTIVE
+    ? `Your billing is calculated straight from this list: only members switched <b>Active</b> who complete at least <b>3 scans a day on 3 different days within the month</b> are charged, at ${money(PRICE)}/member/month.`
+    : `You're on a free trial — nothing is billed yet. This list shows who would be charged (${money(PRICE)}/member/month) once your plan is activated.`;
+  $("note").innerHTML = hasAny
+    ? billingLine + pendingNote
+    : `No members yet. When a member starts a training package and is enrolled in your gym, they'll appear here.`;
+}
+
+async function loadEngagement(){
+  try {
+    const fn = httpsCallable(fns, "myGymEngagement");
+    const res = await fn({});
+    const d = res.data || {};
+    $("engCount").textContent = (d.engaged ?? 0);
+    $("engFoot").textContent = "of " + (d.active ?? 0) + " active this month";
+  } catch (e) {
+    $("engCount").textContent = "—";
+    $("engFoot").textContent = "usage unavailable";
+  }
+}
+
+async function toggle(i, cb){
+  const m = ROSTER[i];
+  const next = cb.checked ? "active" : "inactive";
+  cb.disabled = true;
+  try {
+    const patch = { status: next, lastToggledAt: serverTimestamp() };
+    if (next === "inactive") patch.coachEndedAt = serverTimestamp();
+    await updateDoc(m.ref, patch);
+    m.status = next;
+    render();
+  } catch (e) {
+    cb.checked = !cb.checked;      // revert on failure
+    alert("Couldn't update this member: " + friendly(e));
+  } finally {
+    cb.disabled = false;
+  }
+}
+
+async function resendWelcome(email, btn){
+  if (!email) return;
+  const orig = btn ? btn.textContent : "";
+  if (btn){ btn.disabled = true; btn.textContent = "Sending…"; }
+  try {
+    const fn = httpsCallable(fns, "resendWelcomeEmail");
+    await fn({ email });
+    if (btn){ btn.textContent = "Sent ✓"; setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 3000); }
+  } catch (e) {
+    if (btn){ btn.textContent = orig; btn.disabled = false; }
+    $("enrollMsg") && ($("enrollMsg").style.color = "var(--bad)", $("enrollMsg").textContent = "Couldn't resend to " + email + ": " + friendly(e));
+  }
+}
+
+async function removeEnrolled(i, btn){
+  const m = ROSTER[i]; if (!m) return;
+  // Two-click confirm ON the button — no browser dialog (which Chrome can block).
+  if (!btn || btn.dataset.armed !== "1") {
+    if (btn) {
+      btn.dataset.armed = "1";
+      btn.textContent = "Confirm remove";
+      setTimeout(() => { if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = "Remove"; } }, 4000);
+    }
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Removing…";
+  try {
+    await deleteDoc(m.ref);
+    await loadRoster();
+  } catch (e) {
+    btn.disabled = false; btn.dataset.armed = "0"; btn.textContent = "Remove";
+    $("enrollMsg") && ($("enrollMsg").style.color = "var(--bad)", $("enrollMsg").textContent = "Couldn't remove: " + friendly(e));
+  }
+}
+
+async function removePending(i, btn){
+  const p = PENDING[i]; if (!p || !p.ref) return;
+  if (!btn || btn.dataset.armed !== "1") {
+    if (btn) {
+      btn.dataset.armed = "1";
+      btn.textContent = "Confirm cancel";
+      setTimeout(() => { if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = "Remove"; } }, 4000);
+    }
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Cancelling…";
+  try {
+    await deleteDoc(p.ref);
+    await loadRoster();
+  } catch (e) {
+    btn.disabled = false; btn.dataset.armed = "0"; btn.textContent = "Remove";
+    $("enrollMsg") && ($("enrollMsg").style.color = "var(--bad)", $("enrollMsg").textContent = "Couldn't cancel: " + friendly(e));
+  }
+}
+
+// ---- add / enroll a member ----
+$("addBtn").addEventListener("click", () => {
+  const r = $("addRow");
+  r.style.display = r.style.display === "flex" ? "none" : "flex";
+});
+$("cancelAdd").addEventListener("click", () => {
+  $("addRow").style.display = "none";
+  $("newName").value = ""; $("newEmail").value = ""; $("enrollMsg").textContent = "";
+});
+$("enrollBtn").addEventListener("click", async () => {
+  const memberName = $("newName").value.trim();
+  const email = $("newEmail").value.trim();
+  const status = $("newStatus").value;
+  if (!memberName) { $("enrollMsg").style.color = "var(--bad)"; $("enrollMsg").textContent = "Enter the member's name."; return; }
+  if (!email) { $("enrollMsg").style.color = "var(--bad)"; $("enrollMsg").textContent = "Enter the member's email."; return; }
+  $("enrollBtn").disabled = true;
+  $("enrollMsg").style.color = "var(--muted)"; $("enrollMsg").textContent = "Enrolling...";
+  try {
+    const fn = httpsCallable(fns, "enrollMember");
+    const res = await fn({ memberName: memberName, email: email, status: status });
+    $("enrollMsg").style.color = "var(--active)";
+    if (res.data && res.data.result === "pending") {
+      $("enrollMsg").textContent = email + " will be enrolled automatically when they sign into the app.";
+    } else {
+      $("enrollMsg").textContent = email + " enrolled (" + status + ").";
+    }
+    $("newName").value = ""; $("newEmail").value = "";
+    await loadRoster();
+  } catch (e) {
+    $("enrollMsg").style.color = "var(--bad)";
+    $("enrollMsg").textContent = "Couldn't enroll: " + friendly(e);
+  } finally { $("enrollBtn").disabled = false; }
+});
+</script>
+</body>
+</html>

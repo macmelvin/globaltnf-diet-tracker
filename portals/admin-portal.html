@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProteinTracker — Admin Console</title>
+<style>
+  :root{ --surface:#fcfcfb; --page:#f9f9f7; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --border:rgba(11,11,11,0.10); --brand:#2a78d6; --good:#0ca30c; --warn:#eda100; --bad:#d03b3b; }
+  @media (prefers-color-scheme: dark){ :root{ --surface:#1a1a19; --page:#0d0d0d; --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --border:rgba(255,255,255,0.12); --brand:#3987e5; } }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--page); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1060px; margin:0 auto; padding:22px 20px 64px; }
+  .bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .logo{ width:30px; height:30px; border-radius:8px; background:var(--brand); color:#fff; display:grid; place-items:center; font-weight:700; }
+  .brand h1{ font-size:17px; margin:0; }
+  .brand .role{ font-size:12px; color:var(--muted); }
+  button{ font-family:inherit; cursor:pointer; }
+  .btn{ font-size:13px; font-weight:650; border:1px solid var(--brand); background:var(--brand); color:#fff; border-radius:9px; padding:9px 15px; }
+  .btn.ghost{ background:var(--surface); color:var(--ink); border-color:var(--border); font-weight:600; }
+  .btn.sm{ padding:6px 11px; font-size:12px; }
+  .btn:hover{ filter:brightness(1.05); }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+  #login{ max-width:360px; margin:8vh auto 0; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 24px; }
+  #login h2{ margin:0 0 4px; font-size:18px; }
+  #login p{ margin:0 0 18px; font-size:13px; color:var(--ink-2); }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:12px; color:var(--ink-2); margin-bottom:4px; }
+  .field input{ width:100%; font-family:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--border); border-radius:9px; background:var(--page); color:var(--ink); }
+  #login .btn{ width:100%; margin-top:6px; padding:11px; }
+  .err{ color:var(--bad); font-size:12px; min-height:16px; margin-top:8px; }
+
+  .sub{ color:var(--ink-2); font-size:13px; margin:12px 0 20px; }
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .tile{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .tile .label{ font-size:12px; color:var(--ink-2); margin-bottom:6px; }
+  .tile .value{ font-size:24px; font-weight:660; letter-spacing:-0.02em; }
+  .tile .foot{ font-size:11px; color:var(--muted); margin-top:4px; }
+
+  h2.sec{ font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin:26px 0 10px; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+  table{ width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; font-size:13px; }
+  th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--grid); }
+  td{ padding:10px 12px; border-bottom:1px solid var(--grid); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  td.num{ font-variant-numeric:tabular-nums; }
+  .name{ font-weight:600; }
+  .rate-in{ width:74px; font-family:inherit; font-size:13px; padding:5px 8px; border:1px solid var(--border); border-radius:7px; background:var(--page); color:var(--ink); font-variant-numeric:tabular-nums; }
+  .st{ font-size:11px; font-weight:650; padding:2px 8px; border-radius:999px; }
+  .st.active{ color:var(--good); background:color-mix(in srgb,var(--good) 13%,transparent); }
+  .st.paused{ color:var(--muted); background:color-mix(in srgb,var(--muted) 16%,transparent); }
+  .st.paid{ color:var(--good); background:color-mix(in srgb,var(--good) 13%,transparent); }
+  .st.sent{ color:var(--warn); background:color-mix(in srgb,var(--warn) 15%,transparent); }
+  .st.failed{ color:var(--bad); background:color-mix(in srgb,var(--bad) 13%,transparent); }
+  .st.none{ color:var(--muted); background:color-mix(in srgb,var(--muted) 14%,transparent); }
+  .st.trial{ color:var(--warn); background:color-mix(in srgb,var(--warn) 15%,transparent); }
+  .st.trialended{ color:var(--bad); background:color-mix(in srgb,var(--bad) 13%,transparent); }
+
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-top:6px; }
+  .formrow{ display:grid; grid-template-columns:1fr 1.4fr 1fr 0.8fr auto; gap:10px; align-items:end; }
+  @media (max-width:760px){ .formrow{ grid-template-columns:1fr 1fr; } }
+  .formrow .field{ margin:0; }
+  .linkbox{ margin-top:10px; font-size:12px; background:var(--page); border:1px dashed var(--border); border-radius:8px; padding:10px 12px; word-break:break-all; display:none; }
+  .linkbox b{ color:var(--good); }
+  #app{ display:none; }
+  .spinner{ color:var(--muted); font-size:13px; padding:24px; text-align:center; }
+  .rowbtns{ display:flex; gap:6px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login">
+    <h2>Admin Console</h2>
+    <p>ProteinTracker — gym &amp; billing management.</p>
+    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="signInBtn">Sign in</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="wrap">
+      <div class="bar">
+        <div class="brand"><div class="logo">P</div><div><h1>ProteinTracker — Admin</h1><div class="role">Gyms, rates, logins &amp; billing</div></div></div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <span id="recomputeMsg" style="font-size:12px; color:var(--muted)"></span>
+          <button class="btn ghost" id="recomputeBtn" title="Recompute every member's access flag now">Recompute access</button>
+          <button class="btn ghost" id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+      <p class="sub">Manage every gym in one place. Rates are in <b>SGD</b>.</p>
+      <div id="billReminder" style="display:none; background:#fff8e6; border:1px solid #f0d795; color:#8a6100; border-radius:12px; padding:12px 16px; margin:0 0 16px; font-size:13.5px; align-items:center; justify-content:space-between; gap:12px;">
+        <span id="billReminderText"></span>
+        <button id="billReminderX" class="btn ghost sm" style="flex:none">Dismiss</button>
+      </div>
+      <div id="trialReminder" style="display:none; background:#eef5ff; border:1px solid #cfe0fb; color:#1f5fae; border-radius:12px; padding:12px 16px; margin:0 0 16px; font-size:13.5px; align-items:center; justify-content:space-between; gap:12px;">
+        <span id="trialReminderText"></span>
+        <button id="trialReminderX" class="btn ghost sm" style="flex:none">Dismiss</button>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <h2 class="sec">Enroll a gym</h2>
+      <div class="panel">
+        <div class="formrow">
+          <div class="field"><label>Gym ID</label><input id="ngId" placeholder="e.g. ironworks-sg"></div>
+          <div class="field"><label>Gym name</label><input id="ngName" placeholder="IronWorks SG"></div>
+          <div class="field"><label>Billing email</label><input id="ngEmail" type="email" placeholder="owner@gym.com"></div>
+          <div class="field"><label>Currency <span style="color:var(--muted);font-weight:400">(3-letter code)</span></label><input id="ngCurrency" class="rate-in" type="text" maxlength="3" value="sgd" placeholder="sgd" autocapitalize="off" autocomplete="off" spellcheck="false" style="width:100%;text-transform:uppercase"></div>
+          <div class="field"><label>Rate / active member</label><input id="ngRate" class="rate-in" type="number" step="0.01" value="3.99" style="width:100%"></div>
+          <button class="btn" id="enrollBtn">Enroll</button>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Info / CC emails <span style="color:var(--muted);font-weight:400">(optional — up to 2, comma-separated; copied on every bill &amp; trial notice)</span></label>
+          <input id="ngCc" type="text" placeholder="manager@gym.com, accounts@gym.com" style="width:100%">
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; color:var(--ink-2); cursor:pointer">
+          <input type="checkbox" id="ngTrial"> Start with a 30-day free trial (gym isn't billed until you convert it)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; color:var(--ink-2); cursor:pointer">
+          <input type="checkbox" id="ngDemo"> Demo gym (for client demos — a single scan counts as “used the app”)
+        </label>
+        <div style="margin-top:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+          <button class="btn ghost" id="demoGymBtn">+ Create a demo gym (one-click)</button>
+          <span style="font-size:12px; color:var(--muted)">Instant pre-configured demo gym (1-scan counting, kept out of real billing). Then press <b>Create login</b> on its row.</span>
+        </div>
+        <div class="err" id="enrollErr"></div>
+      </div>
+
+      <h2 class="sec">Gyms <span class="spinner" id="gymsSpin" style="padding:0">loading…</span></h2>
+      <table>
+        <thead><tr><th>Gym</th><th>Billing email</th><th class="num">Rate / member</th><th class="num">Active</th><th class="num">Est. bill</th><th>Status</th><th>Latest invoice</th><th>Actions</th></tr></thead>
+        <tbody id="gymRows"></tbody>
+      </table>
+
+      <h2 class="sec">Billing history <span class="spinner" id="billSpin" style="padding:0">loading…</span></h2>
+      <table>
+        <thead><tr><th>Period</th><th>Gym</th><th class="num">Members</th><th class="num">Amount (SGD)</th><th>Status</th><th>Stripe invoice</th></tr></thead>
+        <tbody id="billRows"></tbody>
+      </table>
+
+      <div class="linkbox" id="linkbox"></div>
+
+      <h2 class="sec">Billing summary — what each gym owes
+        <span style="margin-left:10px; font-weight:400; text-transform:none; letter-spacing:0">
+          <button class="btn ghost sm" id="engThis">This month</button>
+          <button class="btn ghost sm" id="engLast">Last month</button>
+        </span>
+      </h2>
+      <div class="panel">
+        <p style="font-size:13px; color:var(--ink-2); margin:0 0 10px">
+          The amount to invoice each gym — read it off and bill them your way (e.g. PayNow), no Stripe needed.
+          <b>Used app</b> = members who logged 3+ entries on at least 3 separate days that month; only they are billed.
+          Trial or paused gyms show <b>not billed</b>. Use <b>Last month</b> for the completed month you'd normally invoice.
+        </p>
+        <table>
+          <thead><tr><th>Gym</th><th>Billing email</th><th class="num">Used app</th><th class="num">Rate</th><th class="num">Amount due</th><th></th></tr></thead>
+          <tbody id="engRows"><tr><td colspan="6" style="color:var(--muted); padding:16px 12px">Click <b>This month</b> or <b>Last month</b> to compute what each gym owes.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h2 class="sec">Self-pay app prices <span style="color:var(--muted);font-size:13px;font-weight:400">— what members can choose in the app</span></h2>
+      <div class="panel">
+        <p style="font-size:13px; color:var(--ink-2); margin:0 0 12px">
+          The monthly price members pay when they resubscribe on their own from inside the app. Add one row per
+          currency (3-letter code + amount). Members only see the currencies you list here. SGD is always kept.
+        </p>
+        <table style="max-width:440px">
+          <thead><tr><th>Currency</th><th class="num">Monthly price</th><th></th></tr></thead>
+          <tbody id="spPriceRows"><tr><td colspan="3" style="color:var(--muted); padding:12px">Loading…</td></tr></tbody>
+        </table>
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <button class="btn ghost sm" id="spPriceAddBtn">+ Add currency</button>
+          <button class="btn" id="spPriceSaveBtn">Save prices</button>
+          <span class="err" id="spPriceMsg" style="margin:0"></span>
+        </div>
+      </div>
+
+      <h2 class="sec">Direct (self-pay) members <button class="btn ghost sm" id="spLoadBtn" style="margin-left:10px">Refresh</button></h2>
+      <div class="panel">
+        <p style="font-size:13px; color:var(--ink-2); margin:0 0 12px">
+          Members who pay <b>you</b> directly (outside the app store) to keep the tracker after a gym package ends.
+          Collect payment your way (invoice / Stripe), then grant access here. These are separate from gym-sponsored
+          members — no gym is billed for them.
+        </p>
+        <div class="formrow" style="grid-template-columns:1.6fr 0.6fr 0.7fr auto">
+          <div class="field"><label>Member email</label><input id="spEmail" type="email" placeholder="member@email.com"></div>
+          <div class="field"><label>Months</label><input id="spMonths" type="number" min="1" value="1" class="rate-in" style="width:100%"></div>
+          <div class="field"><label>Price (SGD)</label><input id="spPrice" type="number" step="0.01" min="0" value="2.99" class="rate-in" style="width:100%"></div>
+          <button class="btn" id="spGrantBtn">Grant access</button>
+        </div>
+        <div class="err" id="spMsg"></div>
+        <table style="margin-top:12px">
+          <thead><tr><th>Member</th><th class="num">Price</th><th>Paid until</th><th>Self-pay</th><th>App access</th><th>Actions</th></tr></thead>
+          <tbody id="spRows"><tr><td colspan="6" style="color:var(--muted); padding:14px 12px">Click Refresh to load self-pay members.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h2 class="sec">Member daily activity</h2>
+      <div class="panel">
+        <p style="font-size:13px; color:var(--ink-2); margin:0 0 12px">
+          How many foods a member logged <b>each day</b> (last 30 days) — the same per-day
+          buckets the billing engagement rule uses. Counts saved entries: a photo scan, a
+          manual add, or a favourite. Days meeting the engagement bar (3+) are bold.
+        </p>
+        <div class="formrow" style="grid-template-columns:1.6fr 0.6fr auto">
+          <div class="field"><label>Member email</label><input id="daEmail" type="email" placeholder="member@email.com"></div>
+          <div class="field"><label>Days</label><input id="daDays" type="number" min="1" max="90" value="30" class="rate-in" style="width:100%"></div>
+          <button class="btn" id="daBtn">Show activity</button>
+        </div>
+        <div class="err" id="daMsg"></div>
+        <div id="daSummary" style="font-size:13px;color:var(--ink-2);margin:10px 2px 0"></div>
+        <table style="margin-top:12px">
+          <thead><tr><th>Date</th><th class="num">Foods logged</th><th style="width:45%"></th></tr></thead>
+          <tbody id="daRows"><tr><td colspan="3" style="color:var(--muted); padding:14px 12px">Enter a member email and press Show activity.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h2 class="sec">Un-bind a gym login</h2>
+      <div class="panel">
+        <p style="font-size:13px; color:var(--ink-2); margin:0 0 12px">
+          Strips the hidden gym tag from an account — use it if a gym was deleted while its owner still
+          carried the tag. The account keeps its data and (if it's yours) its admin access.
+        </p>
+        <div class="formrow" style="grid-template-columns:1fr auto">
+          <div class="field"><label>Account email</label><input id="clearEmail" type="email" placeholder="owner@gym.com"></div>
+          <button class="btn" id="clearTagBtn">Clear gym tag</button>
+        </div>
+        <div class="err" id="clearTagMsg"></div>
+      </div>
+
+      <h2 class="sec" style="color:var(--bad)">Testing · reset to clean slate</h2>
+      <div class="panel" style="border-color:color-mix(in srgb,var(--bad) 35%,var(--border))">
+        <p style="font-size:13px;color:var(--ink-2);margin:0 0 12px">
+          Permanently deletes <b>all gyms, gym-owner logins, member enrollments, pending invites and billing snapshots</b>
+          so you can run a clean test. Member app accounts and their tracker data are <b>not</b> touched. This cannot be undone.
+        </p>
+        <div class="formrow" style="grid-template-columns:1fr auto">
+          <div class="field"><label>Type RESET to confirm</label><input id="resetConfirm" placeholder="RESET" autocomplete="off"></div>
+          <button class="btn" id="resetBtn" style="background:var(--bad);border-color:var(--bad)">Reset test data</button>
+        </div>
+        <div class="err" id="resetMsg"></div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, collectionGroup,
+         query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
+/* ===========================================================================
+   1) PASTE YOUR FIREBASE WEB CONFIG (same one used in the gym portal)
+   Firebase console → Project settings → General → Your apps → Config.
+   =========================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCNdGi-vAYYAas6Ykh9k5pjEXg-0LLKI4g",
+  authDomain: "protein-tracker-for-50s.firebaseapp.com",
+  projectId: "protein-tracker-for-50s",
+  storageBucket: "protein-tracker-for-50s.firebasestorage.app",
+  messagingSenderId: "573755588416",
+  appId: "1:573755588416:web:203efa53244735ab1884a5",
+};
+
+/* 2) Your admin Firebase Auth uid(s). This only controls what the UI shows —
+   the Firestore security rules are the real gate. Keep it in sync with the
+   ADMIN_UIDS in your rules and in gymAdmin.js. */
+const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"];
+
+const REGION = "asia-southeast1";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const fns = getFunctions(app, REGION);
+
+const $ = id => document.getElementById(id);
+// Gyms and self-pay members can be billed in any currency. Amounts are shown
+// with a known symbol where we have one, else the uppercase code (e.g. "MYR 12.00");
+// totals that span currencies are shown per-currency.
+const CURRENCY_SYMBOL = { sgd:"S$", usd:"US$", myr:"RM", eur:"€", gbp:"£", aud:"A$", nzd:"NZ$", hkd:"HK$", cny:"¥", jpy:"¥", inr:"₹", idr:"Rp", thb:"฿", php:"₱", krw:"₩", twd:"NT$", cad:"C$", chf:"CHF ", aed:"AED ", vnd:"₫" };
+const ZERO_DEC = new Set(["bif","clp","djf","gnf","jpy","kmf","krw","mga","pyg","rwf","ugx","vnd","vuv","xaf","xof","xpf"]);
+const THREE_DEC = new Set(["bhd","jod","kwd","omr","tnd"]);
+const curCode = c => String(c||"sgd").trim().toLowerCase();
+const curSym = c => CURRENCY_SYMBOL[curCode(c)] || (curCode(c).toUpperCase()+" ");
+const curDecimals = c => ZERO_DEC.has(curCode(c)) ? 0 : (THREE_DEC.has(curCode(c)) ? 3 : 2);
+const curOf = g => (g && g.currency) || "sgd";
+const money = (n, cur) => curSym(cur) + Number(n||0).toFixed(curDecimals(cur));
+// Sum a list of [amount, currency] pairs and render one string, e.g.
+// "S$120.00 + US$40.00". Currencies can't be added together, so we keep them apart.
+function moneyByCurrency(pairs){
+  const sums = {};
+  (pairs||[]).forEach(([amt, cur]) => {
+    const c = String(cur||"sgd").toLowerCase();
+    sums[c] = (sums[c]||0) + Number(amt||0);
+  });
+  const keys = Object.keys(sums);
+  if (!keys.length) return money(0);
+  return keys.sort().map(c => money(sums[c], c)).join(" + ");
+}
+
+// >>> YOUR PAYNOW DETAILS — shown in the billing email you send each gym. <<<
+const PAYNOW_NUMBER = "81617181";   // your PayNow number / UEN
+const PAYNOW_NAME   = "TAX KOX LIAXX";  // payee name gyms see on PayNow
+// Trial length in days (production value).
+const TRIAL_DAYS = 30;
+
+$("signInBtn").addEventListener("click", async () => {
+  $("loginErr").textContent = "";
+  try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value); }
+  catch (e) { $("loginErr").textContent = friendly(e); }
+});
+$("password").addEventListener("keydown", e => { if (e.key==="Enter") $("signInBtn").click(); });
+$("signOutBtn").addEventListener("click", () => signOut(auth));
+$("recomputeBtn").addEventListener("click", () => recomputeAccess("Done."));
+
+function friendly(e){
+  const c = (e && e.code) || "";
+  if (c.includes("wrong-password")||c.includes("invalid-credential")) return "Wrong email or password.";
+  if (c.includes("user-not-found")) return "No account for that email.";
+  if (c.includes("permission-denied")) return "You don't have admin access.";
+  return (e && e.message) || "Something went wrong.";
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return show("login");
+  if (!ADMIN_UIDS.includes(user.uid)) {
+    $("loginErr").textContent = "This account isn't an admin.";
+    await signOut(auth); return show("login");
+  }
+  show("app");
+  await loadAll();
+  loadSpPrices();   // populate the self-pay price-list editor
+});
+function show(w){ $("login").style.display = w==="login"?"block":"none"; $("app").style.display = w==="app"?"block":"none"; }
+
+let GYMS = [];
+
+let billReminderDismissed = false;
+function showBillReminder(){
+  const el = $("billReminder"); if (!el) return;
+  if (billReminderDismissed) { el.style.display = "none"; return; }
+  const now = new Date();
+  // Nudge in the first 14 days of the month to bill the PREVIOUS month.
+  if (now.getDate() > 14) { el.style.display = "none"; return; }
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevPeriod = prev.getFullYear() + "-" + String(prev.getMonth() + 1).padStart(2, "0");
+  const monthName = prev.toLocaleDateString(undefined, { month:"long", year:"numeric" });
+  // Active, paying gyms NOT yet marked billed for last month.
+  const outstanding = GYMS.filter(g => (g.status||"active")==="active" && g.billingActive !== false && g.demoMode !== true && g.lastBilledPeriod !== prevPeriod);
+  if (!outstanding.length) { el.style.display = "none"; return; }
+  const names = outstanding.map(g => g.name || g.id).join(", ");
+  $("billReminderText").innerHTML =
+    "\u23F0 <b>Time to bill your gyms for " + monthName + ".</b> " +
+    "Still to bill: <b>" + outstanding.length + "</b> (" + names + "). " +
+    "Scroll to <b>Billing summary</b> \u2192 <b>Last month</b> and press <b>Bill</b> for each.";
+  el.style.display = "flex";
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const x = $("billReminderX");
+  if (x) x.addEventListener("click", () => { billReminderDismissed = true; $("billReminder").style.display = "none"; });
+});
+
+let trialReminderDismissed = false;
+function showTrialReminder(){
+  const el = $("trialReminder"); if (!el) return;
+  if (trialReminderDismissed) { el.style.display = "none"; return; }
+  const now = Date.now();
+  // Gyms on a live trial (not yet billing) with 12 or fewer days left -> from ~day 18 of a 30-day trial.
+  const ending = GYMS
+    .filter(g => (g.status||"active")==="active" && g.billingActive === false && Number(g.trialEndsAt||0) > now)
+    .map(g => ({ g, days: Math.max(0, Math.ceil((Number(g.trialEndsAt) - now) / 86400000)) }))
+    .filter(x => x.days <= 12)
+    .sort((a,b) => a.days - b.days);
+  if (!ending.length) { el.style.display = "none"; return; }
+  const rows = ending.map(x => {
+    const nm = (x.g.name || x.g.id);
+    return "<div style=\"display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0\">" +
+             "<span><b>" + nm + "</b> \u2014 " + x.days + "d left</span>" +
+             "<button class=\"btn ghost sm\" data-trialmail=\"" + x.g.id + "\" style=\"flex:none\">Email their numbers</button>" +
+           "</div>";
+  }).join("");
+  $("trialReminderText").innerHTML =
+    "<div style=\"margin-bottom:6px\">\uD83D\uDCC5 <b>Trial check-in.</b> " +
+    "<b>" + ending.length + "</b> gym" + (ending.length>1?"s are":" is") + " nearing the end of a free trial. " +
+    "Send each their live engagement numbers and offer to convert to paid.</div>" + rows;
+  el.style.display = "flex";
+  el.querySelectorAll("[data-trialmail]").forEach(b =>
+    b.addEventListener("click", () => emailTrialNumbers(b.dataset.trialmail, b)));
+}
+
+// Pulls this month's live engaged count for one gym and opens a pre-filled
+// check-in email (numbers + estimated bill + convert offer) in your mail app.
+async function emailTrialNumbers(gymId, btn){
+  const g = GYMS.find(x => x.id === gymId); if (!g) return;
+  if (!g.billingEmail) { alert("This gym has no billing email on file."); return; }
+  const rate = Number(g.pricePerMemberUsd || 3.99);
+  const now = Date.now();
+  const days = Math.max(0, Math.ceil((Number(g.trialEndsAt||0) - now) / 86400000));
+  const endDate = new Date(Number(g.trialEndsAt||0)).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+  const monthName = new Date().toLocaleDateString(undefined,{month:"long",year:"numeric"});
+  const label = btn ? btn.textContent : "";
+  if (btn){ btn.disabled = true; btn.textContent = "Loading\u2026"; }
+  let engaged = 0;
+  try {
+    const fn = httpsCallable(fns, "engagementReport");
+    const res = await fn({ period: "current" });
+    const list = (res.data && res.data.rows) || [];
+    const row = list.find(r => r.gymId === gymId);
+    engaged = row ? Number(row.engaged || 0) : 0;
+  } catch(e){
+    if (btn){ btn.disabled = false; btn.textContent = label; }
+    alert("Couldn't fetch live numbers: " + friendly(e)); return;
+  }
+  if (btn){ btn.disabled = false; btn.textContent = label; }
+  const est = money(engaged * rate, curOf(g));
+  const subject = `How your ProteinTracker trial is going \u2014 ${monthName}`;
+  const body =
+    `Hi ${g.name},\n\n` +
+    `A quick update on your free ProteinTracker trial \u2014 it ends on ${endDate} (${days} day${days===1?"":"s"} left).\n\n` +
+    `Members actively using the app this month: ${engaged}\n` +
+    `Rate after the trial: ${money(rate, curOf(g))} / active member\n` +
+    `Estimated first bill: about ${est}/month \u2014 you only ever pay for members who actually use it.\n\n` +
+    `If you'd like to keep it going, just reply and I'll switch you over to a paid plan. Happy to answer any questions.\n\n` +
+    `Thanks!\nProteinTracker`;
+  const _cc = ((g.ccEmails) || []).join(",");
+  const _ccP = _cc ? `&cc=${encodeURIComponent(_cc)}` : "";
+  const _a = document.createElement("a");
+  _a.href = `mailto:${encodeURIComponent(g.billingEmail)}?subject=${encodeURIComponent(subject)}${_ccP}&body=${encodeURIComponent(body)}`;
+  document.body.appendChild(_a); _a.click(); _a.remove();
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const x = $("trialReminderX");
+  if (x) x.addEventListener("click", () => { trialReminderDismissed = true; $("trialReminder").style.display = "none"; });
+});
+
+async function loadAll(){
+  $("gymsSpin").style.display = "inline";
+  // gyms
+  const gymSnap = await getDocs(collection(db, "gyms"));
+  // Public-01 is the internal self-pay roster bucket, not a real gym. Hide it from
+  // the gym list/KPIs — self-pay members are managed in the "Direct (self-pay)
+  // members" panel below. (It still exists in Firestore; we just don't show it here.)
+  GYMS = gymSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .filter(g => g.id !== "Public-01");
+
+  // active member counts: one collectionGroup query, tally by gymId
+  const counts = {};
+  try {
+    const actSnap = await getDocs(query(collectionGroup(db, "enrollments"), where("status","==","active")));
+    actSnap.forEach(d => { const g = d.data().gymId; if (g) counts[g] = (counts[g]||0)+1; });
+  } catch(e){ console.warn("active count query:", e.message); }
+
+  // all billing snapshots per gym (drives both the gym-row pill and the history table)
+  $("billSpin").style.display = "inline";
+  await Promise.all(GYMS.map(async g => {
+    g._active = counts[g.id] || 0;
+    try {
+      const s = await getDocs(collection(db, `gyms/${g.id}/billingSnapshots`));
+      g._snaps = s.docs.map(d => ({ period: d.id, ...d.data() }))
+                       .sort((a,b) => (b.period||"").localeCompare(a.period||""));
+      g._latest = g._snaps[0] || null;
+    } catch(e){ g._snaps = []; g._latest = null; }
+  }));
+
+  renderKPIs(); renderGyms(); renderBillingHistory(); showBillReminder(); showTrialReminder();
+  $("gymsSpin").style.display = "none";
+  $("billSpin").style.display = "none";
+}
+
+function renderKPIs(){
+  const active = GYMS.filter(g => (g.status||"active")==="active");
+  const totalActive = GYMS.reduce((s,g)=>s+(g._active||0),0);
+  const mrrPairs = GYMS.filter(g => g.billingActive !== false)
+                       .map(g => [(g._active||0)*Number(g.pricePerMemberUsd||0), curOf(g)]);
+  const paid = GYMS.filter(g=>g._latest && g._latest.invoiceStatus==="paid").length;
+  const failed = GYMS.filter(g=>g._latest && g._latest.invoiceStatus==="failed").length;
+  const tiles = [
+    { label:"Gyms", value:GYMS.length, foot:active.length+" active" },
+    { label:"Total active members", value:totalActive, foot:"across all gyms" },
+    { label:"Projected MRR", value:moneyByCurrency(mrrPairs), foot:"active × rate" },
+    { label:"Latest invoices paid", value:paid, foot:failed+" failed" },
+  ];
+  $("kpis").innerHTML = tiles.map(t=>`<div class="tile"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="foot">${t.foot}</div></div>`).join("");
+}
+
+function invoicePill(l){
+  if (!l || !l.invoiceStatus) return '<span class="st none">—</span>';
+  const s = l.invoiceStatus;
+  const label = { paid:"Paid", sent:"Sent", failed:"Failed", uncollectible:"Uncollectible", voided:"Voided" }[s] || s;
+  const cls = ["paid","sent","failed"].includes(s) ? s : "none";
+  return `<span class="st ${cls}">${label}</span>`;
+}
+
+function prettyPeriod(p){
+  if (!p || !/^\d{4}-\d{2}$/.test(p)) return p || "—";
+  const [y,m] = p.split("-").map(Number);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return (months[m-1]||p) + " " + y;
+}
+
+function renderBillingHistory(){
+  const rows = [];
+  GYMS.forEach(g => (g._snaps||[]).forEach(sn => rows.push({ g, sn })));
+  rows.sort((a,b) => (b.sn.period||"").localeCompare(a.sn.period||"")
+                  || (a.g.name||a.g.id).localeCompare(b.g.name||b.g.id));
+  if (!rows.length){
+    $("billRows").innerHTML = `<tr><td colspan="6" style="color:var(--muted);padding:20px 12px">No invoices yet. Each gym's monthly charge appears here after the billing run on the 1st of the month (once Stripe is connected).</td></tr>`;
+    return;
+  }
+  $("billRows").innerHTML = rows.map(({g,sn}) => {
+    const members = (sn.billedActiveCount != null) ? sn.billedActiveCount
+                  : (sn.activeCount != null ? sn.activeCount : null);
+    const rate = Number(g.pricePerMemberUsd || sn.pricePerMemberUsd || 0);
+    const amount = (sn.billedTotal != null) ? Number(sn.billedTotal)
+                 : (sn.billedTotalSgd != null) ? Number(sn.billedTotalSgd)
+                 : (members != null ? members * rate : null);
+    const inv = sn.stripeInvoiceId
+      ? `<span style="font-size:11px;color:var(--muted);word-break:break-all">${sn.stripeInvoiceId}</span>` : "—";
+    return `<tr>
+      <td class="name">${prettyPeriod(sn.period)}</td>
+      <td>${g.name || g.id}</td>
+      <td class="num">${members != null ? members : "—"}</td>
+      <td class="num">${amount != null ? money(amount, sn.billedCurrency || curOf(g)) : "—"}</td>
+      <td>${invoicePill(sn)}</td>
+      <td>${inv}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderGyms(){
+  const now = Date.now();
+  $("gymRows").innerHTML = GYMS.map(g => {
+    const status = g.status || "active";
+    const rate = Number(g.pricePerMemberUsd || 0);
+    const trialEnds = Number(g.trialEndsAt || 0);
+    const notBilling = g.billingActive === false;          // trial or awaiting manual conversion
+    const inTrial = notBilling && trialEnds > now;
+    const trialEnded = notBilling && trialEnds > 0 && trialEnds <= now;
+    let billNote = "";
+    if (inTrial) {
+      const d = Math.max(1, Math.ceil((trialEnds - now) / 86400000));
+      billNote = `<br><span class="st trial">Trial · ${d}d left</span>`;
+    } else if (trialEnded) {
+      billNote = `<br><span class="st trialended">Trial ended · free until you convert</span>`;
+    } else if (notBilling) {
+      billNote = `<br><span class="st trialended">Not billing</span>`;
+    }
+    const estBill = notBilling ? "—" : money((g._active||0)*rate, curOf(g));
+    const curBadge = curOf(g) !== "sgd"
+      ? `<span style="display:inline-block;font-size:10px;font-weight:700;color:#1d6f42;background:#e4f5ea;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle">${curSym(curOf(g))} ${curOf(g).toUpperCase()}</span>`
+      : "";
+    const billBtn = notBilling
+      ? `<button class="btn ghost sm" data-convert="${g.id}">Convert to paid</button>`
+      : `<button class="btn ghost sm" data-trial="${g.id}">Start 30-day trial</button>`;
+    // Public-01 is self-pay (billed per member via Stripe), never gym-invoiced.
+    const invoiceBtn = (g.id === "Public-01")
+      ? ``
+      : `<button class="btn ghost sm" data-invoice="${g.id}" title="Send this gym a Stripe invoice for a chosen month">Invoice now</button>`;
+    return `<tr>
+      <td><span class="name">${g.name || g.id}</span>${g.demoMode?`<span style="display:inline-block;font-size:10px;font-weight:700;color:#7b46d6;background:#efe8fb;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle">DEMO</span>`:""}${curBadge}<br><span style="color:var(--muted);font-size:11px">${g.id}</span></td>
+      <td style="color:var(--ink-2)">${g.billingEmail || "—"}${(g.ccEmails&&g.ccEmails.length)?`<br><span style="font-size:11px;color:var(--muted)">cc: ${g.ccEmails.join(", ")}</span>`:""}</td>
+      <td class="num"><input class="rate-in" type="number" step="0.01" min="0" value="${rate.toFixed(2)}" data-rate="${g.id}"></td>
+      <td class="num">${g._active||0}</td>
+      <td class="num">${estBill}</td>
+      <td><span class="st ${status}">${status==="active"?"Active":"Paused"}</span>${billNote}</td>
+      <td>${invoicePill(g._latest)}</td>
+      <td><div class="rowbtns">
+        <button class="btn ghost sm" data-login="${g.id}">Create login</button>
+        <button class="btn ghost sm" data-unbind="${g.id}">Remove login</button>
+        <button class="btn ghost sm" data-toggle="${g.id}">${status==="active"?"Pause":"Activate"}</button>
+        ${billBtn}
+        ${invoiceBtn}
+        <button class="btn ghost sm" data-del="${g.id}" style="color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--border))">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join("");
+
+  document.querySelectorAll('[data-rate]').forEach(inp =>
+    inp.addEventListener("change", () => saveRate(inp.dataset.rate, inp.value, inp)));
+  document.querySelectorAll('[data-toggle]').forEach(b =>
+    b.addEventListener("click", () => toggleStatus(b.dataset.toggle)));
+  document.querySelectorAll('[data-login]').forEach(b =>
+    b.addEventListener("click", () => createLogin(b.dataset.login, b)));
+  document.querySelectorAll('[data-del]').forEach(b =>
+    b.addEventListener("click", () => deleteGym(b.dataset.del, b)));
+  document.querySelectorAll('[data-unbind]').forEach(b =>
+    b.addEventListener("click", () => unbindLogin(b.dataset.unbind, b)));
+  document.querySelectorAll('[data-trial]').forEach(b =>
+    b.addEventListener("click", () => startTrial(b.dataset.trial, b)));
+  document.querySelectorAll('[data-convert]').forEach(b =>
+    b.addEventListener("click", () => convertToPaid(b.dataset.convert, b)));
+  document.querySelectorAll('[data-invoice]').forEach(b =>
+    b.addEventListener("click", () => invoiceNow(b.dataset.invoice, b)));
+}
+
+// Small transient toast for action feedback. It survives the table re-render
+// and isn't a browser dialog, so it can't be suppressed like alert()/prompt().
+function toast(msg, ok = true){
+  let t = document.getElementById("_toast");
+  if (!t){
+    t = document.createElement("div");
+    t.id = "_toast";
+    t.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;line-height:1.35;z-index:9999;box-shadow:0 6px 22px rgba(0,0,0,.28);max-width:min(560px,92vw);text-align:center";
+    document.body.appendChild(t);
+  }
+  t.style.background = ok ? "var(--good, #127a3d)" : "#8a1f1f";
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => { t.style.display = "none"; }, 4500);
+}
+
+// Manually send a gym its Stripe invoice for the current month. Two-click
+// confirm (no browser prompt/confirm dialogs — those get suppressed by the
+// browser after a few uses, which made the button feel dead), and a toast that
+// clearly reports the outcome. To bill a specific PAST month, use the
+// invoiceGymNow console call with an explicit period, or the monthly run.
+async function invoiceNow(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  const name = g.name || gymId;
+  const sgt = new Date(Date.now() + 8*60*60*1000);        // Singapore time
+  const period = sgt.toISOString().slice(0,7);            // current month, YYYY-MM
+  // First click arms the button; second click within 4s actually invoices.
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1";
+    btn.dataset.orig = btn.textContent;
+    btn.textContent = `Bill ${period}?`;
+    setTimeout(() => {
+      if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = btn.dataset.orig || "Invoice now"; }
+    }, 4000);
+    return;
+  }
+  btn.dataset.armed = "0";
+  const orig = btn.dataset.orig || "Invoice now";
+  btn.disabled = true; btn.textContent = "Invoicing…";
+  try {
+    const fn = httpsCallable(fns, "invoiceGymNow");
+    const res = await fn({ gymId, period });
+    const result = (res.data && res.data.result) || "done";
+    const MSG = {
+      "invoiced": `✓ Invoice sent to ${name} for ${period}.`,
+      "already-invoiced": `${name} was already invoiced for ${period} — not sent again.`,
+      "nothing-to-bill": `Nothing to bill: no active member of ${name} used the app in ${period}.`,
+      "no-snapshot": `No billing snapshot exists for ${period} yet, so ${name} can't be invoiced.`,
+      "not-billing-trial": `${name} is on a free trial, so it isn't billed.`,
+      "no-billing-email": `${name} has no billing email on file.`,
+      "gym-inactive": `${name} is paused, so it isn't billed.`,
+      "gym-missing": `Gym "${gymId}" was not found.`,
+      "public-selfpay-skip": `The self-pay bucket is billed per member via Stripe, never gym-invoiced.`,
+    };
+    toast(MSG[result] || `Result: ${result}`, result === "invoiced");
+    await loadAll();                                        // refresh so the invoice pill updates
+  } catch(e){
+    btn.textContent = orig; btn.disabled = false;
+    toast("Couldn't invoice " + name + ": " + friendly(e), false);
+  }
+}
+
+async function startTrial(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1"; btn.textContent = "Confirm 30-day trial";
+    setTimeout(() => { if (btn.dataset.armed==="1"){ btn.dataset.armed="0"; btn.textContent="Start 30-day trial"; } }, 4000);
+    return;
+  }
+  const ends = Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  try {
+    await updateDoc(doc(db,"gyms",gymId), { trialEndsAt: ends, billingActive: false });
+    g.trialEndsAt = ends; g.billingActive = false;
+    renderKPIs(); renderGyms(); showTrialReminder();
+  } catch(e){ alert("Couldn't start trial: "+friendly(e)); }
+}
+
+async function convertToPaid(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1"; btn.textContent = "Confirm convert";
+    setTimeout(() => { if (btn.dataset.armed==="1"){ btn.dataset.armed="0"; btn.textContent="Convert to paid"; } }, 4000);
+    return;
+  }
+  try {
+    await updateDoc(doc(db,"gyms",gymId), { billingActive: true, trialEndsAt: null });
+    g.billingActive = true; g.trialEndsAt = null;
+    renderKPIs(); renderGyms();
+  } catch(e){ alert("Couldn't convert: "+friendly(e)); }
+}
+
+async function saveRate(gymId, val, inp){
+  const v = parseFloat(val);
+  if (isNaN(v) || v < 0) return;
+  inp.disabled = true;
+  try {
+    await updateDoc(doc(db,"gyms",gymId), { pricePerMemberUsd: v });
+    const g = GYMS.find(x=>x.id===gymId); if (g) g.pricePerMemberUsd = v;
+    renderKPIs(); renderGyms();
+  } catch(e){ alert("Couldn't update rate: "+friendly(e)); }
+  finally { inp.disabled = false; }
+}
+
+async function toggleStatus(gymId){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  const next = (g.status||"active")==="active" ? "paused" : "active";
+  try {
+    await updateDoc(doc(db,"gyms",gymId), { status: next });
+    g.status = next; renderKPIs(); renderGyms();
+    await recomputeAccess(`Gym ${next} — member access updated.`);
+  }
+  catch(e){ alert("Couldn't change status: "+friendly(e)); }
+}
+
+// Recompute every member's access flag server-side (paused gyms sponsor nobody).
+async function recomputeAccess(okPrefix){
+  $("recomputeBtn").disabled = true;
+  $("recomputeMsg").style.color = "var(--ink-2)";
+  $("recomputeMsg").textContent = "Recomputing access…";
+  try {
+    const fn = httpsCallable(fns, "recomputeAllAccess");
+    const res = await fn({});
+    const d = res.data || {};
+    $("recomputeMsg").style.color = "var(--good)";
+    $("recomputeMsg").textContent = (okPrefix ? okPrefix + " " : "") + `(${d.changed||0} of ${d.total||0} member(s) changed)`;
+  } catch(e){
+    $("recomputeMsg").style.color = "var(--bad)";
+    $("recomputeMsg").textContent = "Access recompute failed: " + friendly(e);
+  } finally { $("recomputeBtn").disabled = false; }
+}
+
+async function deleteGym(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  const name = g.name || gymId;
+  // Two-click confirm (browser confirm() dialogs get suppressed, which made
+  // this button feel dead). First click arms; second within 4s deletes.
+  if (btn && btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1";
+    btn.dataset.orig = btn.textContent;
+    btn.textContent = "Delete — sure?";
+    toast(`Permanently delete "${name}" (gym, owner login, enrollments, billing history)? Click Delete again to confirm. Members' app data is kept.`, false);
+    setTimeout(() => { if (btn.dataset.armed === "1"){ btn.dataset.armed = "0"; btn.textContent = btn.dataset.orig || "Delete"; } }, 4000);
+    return;
+  }
+  if (btn){ btn.dataset.armed = "0"; btn.disabled = true; btn.textContent = "Deleting…"; }
+  try {
+    const fn = httpsCallable(fns, "deleteGym");
+    const res = await fn({ gymId });
+    const s = (res.data && res.data.summary) || {};
+    toast(`Deleted ${name} — removed ${s.gymOwnerLogins||0} login, ${s.enrollments||0} enrollment(s), ${s.pendingEnrollments||0} pending invite(s).`, true);
+    await loadAll();
+  } catch(e){
+    if (btn){ btn.disabled = false; btn.textContent = btn.dataset.orig || "Delete"; }
+    toast("Couldn't delete "+name+": "+friendly(e), false);
+  }
+}
+
+async function unbindLogin(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  // two-click confirm on the button (no browser dialog to get blocked)
+  if (btn.dataset.armed !== "1") {
+    btn.dataset.armed = "1"; btn.textContent = "Confirm";
+    setTimeout(() => { if (btn.dataset.armed === "1") { btn.dataset.armed = "0"; btn.textContent = "Remove login"; } }, 4000);
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Removing…";
+  try {
+    const fn = httpsCallable(fns, "unbindGymOwner");
+    const res = await fn({ gymId });
+    const sm = (res.data && res.data.summary) || {};
+    await loadAll();
+    const box = $("linkbox"); box.style.display = "block";
+    box.innerHTML = `<b>Login removed for ${g.name||gymId}.</b><br>Un-bound ${sm.logins||0} account(s)${(sm.emails&&sm.emails.length)?" ("+sm.emails.join(", ")+")":""} and removed ${sm.enrollmentsRemoved||0} of their own enrollment(s). The account keeps its data and admin access — it just no longer manages this gym.`;
+    box.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  } catch(e){
+    btn.disabled = false; btn.dataset.armed = "0"; btn.textContent = "Remove login";
+    alert("Couldn't remove login: "+friendly(e)+"\n(Is the unbindGymOwner function deployed?)");
+  }
+}
+
+// One-click demo gym: pre-configured, demoMode on, active (not trial) so the
+// billing flow shows amounts. Reusable for every prospect.
+const DEMO_BILLING_EMAIL = "demoproteintracker@gmail.com"; // change to whatever address you demo with
+function nextDemoId(){
+  const used = new Set(GYMS.map(g => g.id));
+  for (let i=1;i<100;i++){ const id="DemoGym"+String(i).padStart(2,"0"); if(!used.has(id)) return id; }
+  return "DemoGym" + Date.now();
+}
+async function createDemoGym(btn){
+  const t = btn.textContent; btn.disabled = true; btn.textContent = "Creating\u2026";
+  try {
+    const id = nextDemoId();
+    await setDoc(doc(db,"gyms",id), {
+      name: "Demo Gym", billingEmail: DEMO_BILLING_EMAIL, ccEmails: [],
+      demoMode: true, pricePerMemberUsd: 3.99, currency: "sgd", status: "active",
+      createdAt: serverTimestamp(),
+    });
+    await loadAll();
+  } catch(e){ alert("Couldn't create demo gym: " + friendly(e)); }
+  finally { btn.disabled = false; btn.textContent = t; }
+}
+$("demoGymBtn").addEventListener("click", (e) => createDemoGym(e.currentTarget));
+
+// Public-01 is the self-pay roster bucket — members pay individually via Stripe,
+// so it must never run on a gym-style 30-day trial. Disable the checkbox for it.
+(function(){
+  const idEl = $("ngId"), trialEl = $("ngTrial");
+  const trialLabel = trialEl.closest("label");
+  function sync(){
+    const isPublic = idEl.value.trim() === "Public-01";
+    trialEl.disabled = isPublic;
+    if (isPublic) trialEl.checked = false;
+    if (trialLabel){
+      trialLabel.style.opacity = isPublic ? "0.45" : "";
+      trialLabel.style.cursor  = isPublic ? "not-allowed" : "pointer";
+      trialLabel.title = isPublic ? "Public-01 is the self-pay bucket — members pay individually, so it never runs on a gym trial." : "";
+    }
+  }
+  idEl.addEventListener("input", sync);
+  sync();
+})();
+
+$("enrollBtn").addEventListener("click", async () => {
+  $("enrollErr").textContent = "";
+  const id = $("ngId").value.trim();
+  const name = $("ngName").value.trim();
+  const email = $("ngEmail").value.trim().toLowerCase();
+  const rate = parseFloat($("ngRate").value);
+  const currency = ((($("ngCurrency") && $("ngCurrency").value) || "sgd").trim().toLowerCase());
+  const ccEmails = $("ngCc").value.split(",").map(x=>x.trim().toLowerCase()).filter(x=>x.includes("@")).slice(0,2);
+  if (!id || !name || !email || isNaN(rate)) { $("enrollErr").textContent = "Fill in all fields."; return; }
+  if (!/^[a-z]{3}$/.test(currency)) { $("enrollErr").textContent = "Currency must be a 3-letter code (e.g. sgd, usd, myr)."; return; }
+  $("enrollBtn").disabled = true;
+  try {
+    const existing = await getDoc(doc(db,"gyms",id));
+    if (existing.exists()) { $("enrollErr").textContent = "That gym ID already exists."; $("enrollBtn").disabled=false; return; }
+    const gymData = {
+      name, billingEmail: email, ccEmails, demoMode: $("ngDemo").checked, pricePerMemberUsd: rate,
+      currency, status: "active",
+      createdAt: serverTimestamp(),
+    };
+    if ($("ngTrial").checked && id !== "Public-01") {   // Public-01 self-pay bucket never runs a gym trial
+      gymData.trialEndsAt = Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+      gymData.billingActive = false;   // not billed until you convert
+    }
+    await setDoc(doc(db,"gyms",id), gymData);
+    $("ngId").value = $("ngName").value = $("ngEmail").value = $("ngCc").value = ""; $("ngRate").value = "3.99";
+    if ($("ngCurrency")) $("ngCurrency").value = "sgd";   // reset to default currency
+    $("ngTrial").checked = false; $("ngDemo").checked = false;
+    await loadAll();
+  } catch(e){ $("enrollErr").textContent = "Couldn't enroll: "+friendly(e); }
+  finally { $("enrollBtn").disabled = false; }
+});
+
+async function createLogin(gymId, btn){
+  const g = GYMS.find(x=>x.id===gymId); if(!g) return;
+  if (!g.billingEmail) { alert("This gym has no billing email."); return; }
+  btn.disabled = true; btn.textContent = "Creating…";
+  try {
+    const fn = httpsCallable(fns, "createGymOwner");
+    const res = await fn({ email: g.billingEmail, gymId });
+    const link = res.data.passwordSetupLink;
+    const box = $("linkbox");
+    box.style.display = "block";
+    box.innerHTML = `<b>Login created for ${g.name} (${g.billingEmail}).</b><br>Send this password-setup link to the gym owner:<br>${link}`;
+    box.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  } catch(e){
+    alert("Couldn't create login: "+friendly(e)+"\n(Is the createGymOwner function deployed?)");
+  } finally { btn.disabled = false; btn.textContent = "Create login"; }
+}
+
+$("resetBtn").addEventListener("click", async () => {
+  const val = $("resetConfirm").value.trim();
+  if (val !== "RESET") {
+    $("resetMsg").style.color = "var(--bad)";
+    $("resetMsg").textContent = "Type RESET (in capitals) to confirm.";
+    return;
+  }
+  $("resetBtn").disabled = true;
+  $("resetMsg").style.color = "var(--ink-2)";
+  $("resetMsg").textContent = "Resetting… this can take a few seconds.";
+  try {
+    const fn = httpsCallable(fns, "resetTestData");
+    const res = await fn({ confirm: "RESET" });
+    const s = (res.data && res.data.summary) || {};
+    $("resetMsg").style.color = "var(--good)";
+    $("resetMsg").textContent =
+      `Clean slate ready — removed ${s.gyms||0} gym(s), ${s.gymOwnerLogins||0} login(s), ` +
+      `${s.enrollments||0} enrollment(s), ${s.pendingEnrollments||0} pending invite(s), ` +
+      `${s.memberAccess||0} access flag(s).`;
+    $("resetConfirm").value = "";
+    await loadAll();
+  } catch(e){
+    $("resetMsg").style.color = "var(--bad)";
+    $("resetMsg").textContent = "Couldn't reset: " + friendly(e);
+  } finally { $("resetBtn").disabled = false; }
+});
+
+$("clearTagBtn").addEventListener("click", async () => {
+  const email = $("clearEmail").value.trim();
+  if (!email) { $("clearTagMsg").style.color = "var(--bad)"; $("clearTagMsg").textContent = "Enter an account email."; return; }
+  $("clearTagBtn").disabled = true;
+  $("clearTagMsg").style.color = "var(--ink-2)"; $("clearTagMsg").textContent = "Clearing…";
+  try {
+    const fn = httpsCallable(fns, "clearGymTag");
+    const res = await fn({ email });
+    const d = res.data || {};
+    $("clearTagMsg").style.color = "var(--good)";
+    $("clearTagMsg").textContent = d.hadTag
+      ? `Cleared the "${d.priorTag}" gym tag from ${email}. It can no longer open the gym portal.`
+      : `${email} had no gym tag — nothing to clear. It's already untangled.`;
+    $("clearEmail").value = "";
+  } catch(e){
+    $("clearTagMsg").style.color = "var(--bad)";
+    $("clearTagMsg").textContent = "Couldn't clear: " + friendly(e);
+  } finally { $("clearTagBtn").disabled = false; }
+});
+
+let BILL_ROWS = [], BILL_PERIOD = "";
+async function loadBilling(which){
+  const el = $("engRows");
+  el.innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:16px 12px">Computing…</td></tr>`;
+  try {
+    const fn = httpsCallable(fns, "engagementReport");
+    const res = await fn({ period: which });
+    BILL_ROWS = (res.data && res.data.rows) || [];
+    BILL_PERIOD = (res.data && res.data.period) || "";
+    renderBilling();
+  } catch(e){
+    el.innerHTML = `<tr><td colspan="6" style="color:var(--bad); padding:16px 12px">Couldn't load: ${friendly(e)}</td></tr>`;
+  }
+}
+function renderBilling(){
+  const el = $("engRows");
+  if (!BILL_ROWS.length) { el.innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:16px 12px">No gyms yet.</td></tr>`; return; }
+  const totalPairs = [];
+  const body = BILL_ROWS.map((r, i) => {
+    let amtCell, action = "";
+    if (!r.billingActive) {
+      amtCell = `<span class="st sent">not billed</span>`;
+    } else {
+      const amt = Number(r.amount || 0);
+      const billed = r.lastBilledPeriod === BILL_PERIOD;
+      if (!r.demo) totalPairs.push([amt, r.currency]);   // demo gyms never count toward the real invoice total
+      amtCell = money(amt, r.currency);
+      if (amt > 0) {
+        action = billed
+          ? `<span style="color:var(--good); font-weight:650">✓ Billed</span> <button class="btn ghost sm" data-bill="${i}">Re-send</button>`
+          : `<button class="btn ghost sm" data-bill="${i}">Bill ${r.name}</button>`;
+      } else {
+        action = billed
+          ? `<span style="color:var(--good); font-weight:650">✓ Done</span>`
+          : `<button class="btn ghost sm" data-mark="${i}">Mark done</button>`;
+      }
+    }
+    return `<tr>
+      <td class="name">${r.name}${r.demo?`<span style="display:inline-block;font-size:10px;font-weight:700;color:#7b46d6;background:#efe8fb;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle">DEMO</span>`:""}</td>
+      <td style="color:var(--ink-2)">${r.billingEmail || "—"}</td>
+      <td class="num">${r.engaged}</td>
+      <td class="num">${money(r.rate, r.currency)}</td>
+      <td class="num">${amtCell}</td>
+      <td>${action}</td>
+    </tr>`;
+  }).join("");
+  const totalRow = `<tr style="font-weight:700; background:var(--page)"><td colspan="4" style="text-align:right">Total to invoice · ${BILL_PERIOD}</td><td class="num">${moneyByCurrency(totalPairs)}</td><td></td></tr>`;
+  el.innerHTML = body + totalRow;
+  document.querySelectorAll('[data-bill]').forEach(b => b.addEventListener("click", () => billGym(parseInt(b.dataset.bill,10))));
+  document.querySelectorAll('[data-mark]').forEach(b => b.addEventListener("click", () => markBilled(parseInt(b.dataset.mark,10))));
+}
+$("engThis").addEventListener("click", () => loadBilling("current"));
+$("engLast").addEventListener("click", () => loadBilling("previous"));
+
+// Opens a pre-filled email to the gym (amount + your PayNow) in your own mail
+// app. You review and hit send — no email server or credentials needed.
+function billGym(i){
+  const r = BILL_ROWS[i]; if (!r) return;
+  if (!r.billingEmail) { alert("This gym has no billing email on file."); return; }
+  const _g = GYMS.find(x => x.id === r.gymId);
+  const _cc = ((_g && _g.ccEmails) || []).join(",");
+  const _ccP = _cc ? `&cc=${encodeURIComponent(_cc)}` : "";
+  const amt = money(r.amount || 0, r.currency);
+  const subject = `ProteinTracker invoice — ${BILL_PERIOD} — ${amt}`;
+  // PayNow is a Singapore-only method, so only offer it for SGD gyms. Overseas
+  // (USD) gyms are asked to pay the Stripe invoice / by card instead.
+  const payLine = String(r.currency||"sgd").toLowerCase() === "sgd"
+    ? `Please PayNow to ${PAYNOW_NUMBER} (${PAYNOW_NAME}) with your payment screenshot in this email.`
+    : `Please pay via the Stripe invoice we'll email you (card payment), or reply and we'll arrange a bank transfer.`;
+  const body =
+    `Hi ${r.name},\n\n` +
+    `Here is your ProteinTracker bill for ${BILL_PERIOD}.\n\n` +
+    `Members who used the app: ${r.engaged}\n` +
+    `Rate: ${money(r.rate, r.currency)} / member\n` +
+    `Amount due: ${amt}\n\n` +
+    `${payLine}\n\n` +
+    `Thank you!\nProteinTracker`;
+  const _a = document.createElement("a");
+  _a.href = `mailto:${encodeURIComponent(r.billingEmail)}?subject=${encodeURIComponent(subject)}${_ccP}&body=${encodeURIComponent(body)}`;
+  document.body.appendChild(_a); _a.click(); _a.remove();
+  // mark billed AFTER opening the email; anchor-click doesn't navigate, so this runs
+  markGymBilled(r).then(() => { renderBilling(); showBillReminder(); })
+                  .catch(e => alert("Email opened, but couldn't mark as billed: " + friendly(e)));
+}
+
+async function markGymBilled(r){
+  await updateDoc(doc(db,"gyms",r.gymId), { lastBilledPeriod: BILL_PERIOD, lastBilledAt: serverTimestamp() });
+  r.lastBilledPeriod = BILL_PERIOD;
+  const g = GYMS.find(x => x.id === r.gymId); if (g) g.lastBilledPeriod = BILL_PERIOD;
+}
+async function markBilled(i){
+  const r = BILL_ROWS[i]; if (!r) return;
+  await markGymBilled(r);
+  renderBilling(); showBillReminder();
+}
+
+// ---- direct self-pay members ----
+function spDate(ms){ if(!ms) return "—"; const d = new Date(ms); return d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}); }
+
+async function loadSelfPay(){
+  $("spRows").innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:14px 12px">Loading…</td></tr>`;
+  try {
+    const fn = httpsCallable(fns, "listSelfPay");
+    const res = await fn({});
+    const rows = (res.data && res.data.rows) || [];
+    if (!rows.length) { $("spRows").innerHTML = `<tr><td colspan="6" style="color:var(--muted); padding:14px 12px">No self-pay members yet.</td></tr>`; return; }
+    $("spRows").innerHTML = rows.map(r => `<tr>
+      <td class="name">${r.email}</td>
+      <td class="num">${money(r.price, r.currency)}</td>
+      <td>${spDate(r.until)}</td>
+      <td><span class="st ${r.active?"active":"paused"}">${r.active?"Active":"Lapsed"}</span></td>
+      <td><span class="st ${r.hasAccess?"active":"paused"}">${r.hasAccess?"On":"Off"}</span>${r.hasAccess?`<br><span style="font-size:11px;color:var(--muted)">${r.accessSource||"no active source — Recompute"}</span>`:""}</td>
+      <td><div class="rowbtns">
+        <button class="btn ghost sm" data-sprevoke="${r.email}" style="color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--border))">Revoke</button>
+        <button class="btn ghost sm" data-spdel="${r.uid}" data-spdelemail="${r.email}" title="Permanently delete this record" style="color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--border))">Remove</button>
+      </div></td>
+    </tr>`).join("");
+    document.querySelectorAll('[data-sprevoke]').forEach(b => b.addEventListener("click", () => revokeSelfPay(b.dataset.sprevoke, b)));
+    document.querySelectorAll('[data-spdel]').forEach(b => b.addEventListener("click", () => removeSelfPay(b.dataset.spdel, b.dataset.spdelemail, b)));
+  } catch(e){ $("spRows").innerHTML = `<tr><td colspan="6" style="color:var(--bad); padding:14px 12px">Couldn't load: ${friendly(e)}</td></tr>`; }
+}
+
+$("spLoadBtn").addEventListener("click", loadSelfPay);
+
+$("spGrantBtn").addEventListener("click", async () => {
+  const email = $("spEmail").value.trim();
+  const months = parseInt($("spMonths").value,10) || 1;
+  const price = parseFloat($("spPrice").value) || 0;
+  if (!email) { $("spMsg").style.color="var(--bad)"; $("spMsg").textContent="Enter the member's email."; return; }
+  $("spGrantBtn").disabled = true; $("spMsg").style.color="var(--ink-2)"; $("spMsg").textContent="Granting…";
+  try {
+    const fn = httpsCallable(fns, "grantSelfPay");
+    await fn({ email, months, price });
+    $("spMsg").style.color="var(--good)";
+    $("spMsg").textContent = `${email} now has direct access for ${months} month${months>1?"s":""}. Their tracker is on.`;
+    $("spEmail").value="";
+    await loadSelfPay();
+  } catch(e){ $("spMsg").style.color="var(--bad)"; $("spMsg").textContent = "Couldn't grant: " + friendly(e); }
+  finally { $("spGrantBtn").disabled = false; }
+});
+
+// ---- member daily activity (foods logged per day) ----
+async function loadDailyActivity(){
+  const email = $("daEmail").value.trim();
+  const days = Math.min(90, Math.max(1, parseInt($("daDays").value,10) || 30));
+  if(!email){ $("daMsg").style.color="var(--bad)"; $("daMsg").textContent="Enter the member's email."; return; }
+  $("daBtn").disabled=true; $("daMsg").style.color="var(--ink-2)"; $("daMsg").textContent="Loading…"; $("daSummary").textContent="";
+  try{
+    const res = await httpsCallable(fns,"memberDailyActivity")({ email, days });
+    const d = res.data || {}; const rows = d.rows || [];
+    $("daMsg").textContent="";
+    const max = Math.max(1, ...rows.map(r=>r.count));
+    $("daSummary").innerHTML = `<b>${d.total||0}</b> foods logged over <b>${d.days}</b> days · active on <b>${d.activeDays||0}</b> day${d.activeDays===1?"":"s"}.`;
+    $("daRows").innerHTML = rows.map(r=>{
+      const pct = Math.round((r.count/max)*100);
+      const strong = r.count>=3 ? "font-weight:700;" : "";
+      const bar = r.count>0
+        ? `<div style="height:9px;border-radius:5px;background:#2a78d6;width:${pct}%;min-width:6px"></div>`
+        : `<span style="color:var(--muted)">—</span>`;
+      return `<tr><td style="${strong}">${r.date}</td><td class="num" style="${strong}">${r.count}</td><td style="width:45%">${bar}</td></tr>`;
+    }).join("");
+  }catch(e){
+    $("daMsg").style.color="var(--bad)"; $("daMsg").textContent="Couldn't load: "+friendly(e);
+    $("daRows").innerHTML=`<tr><td colspan="3" style="color:var(--muted); padding:14px 12px">—</td></tr>`;
+  }finally{ $("daBtn").disabled=false; }
+}
+$("daBtn").addEventListener("click", loadDailyActivity);
+$("daEmail").addEventListener("keydown", e=>{ if(e.key==="Enter") loadDailyActivity(); });
+
+// ---- self-pay price list (the currencies members can pick in the app) ----
+function spPriceRowHtml(code, amount){
+  return `<tr>
+    <td><input class="rate-in" type="text" maxlength="3" value="${code||""}" placeholder="usd" autocapitalize="off" autocomplete="off" spellcheck="false" style="width:90px;text-transform:uppercase" data-spcur></td>
+    <td class="num"><input class="rate-in" type="number" step="0.01" min="0" value="${amount!=null?amount:""}" style="width:110px" data-spamt></td>
+    <td><button class="btn ghost sm" data-sprm title="Remove this currency">✕</button></td>
+  </tr>`;
+}
+function bindSpPriceRowButtons(){
+  document.querySelectorAll('#spPriceRows [data-sprm]').forEach(b =>
+    b.addEventListener("click", () => { b.closest("tr").remove(); }));
+}
+async function loadSpPrices(){
+  const body = $("spPriceRows"); if (!body) return;
+  body.innerHTML = `<tr><td colspan="3" style="color:var(--muted); padding:12px">Loading…</td></tr>`;
+  try {
+    const fn = httpsCallable(fns, "getSelfPayOptions");
+    const res = await fn({});
+    const opts = (res.data && res.data.options) || [];
+    body.innerHTML = opts.length
+      ? opts.map(o => spPriceRowHtml(o.currency, o.amount)).join("")
+      : spPriceRowHtml("sgd", 2.99);
+    bindSpPriceRowButtons();
+  } catch(e){
+    body.innerHTML = `<tr><td colspan="3" style="color:var(--bad); padding:12px">Couldn't load: ${friendly(e)}</td></tr>`;
+  }
+}
+if ($("spPriceAddBtn")) $("spPriceAddBtn").addEventListener("click", () => {
+  $("spPriceRows").insertAdjacentHTML("beforeend", spPriceRowHtml("", ""));
+  bindSpPriceRowButtons();
+});
+if ($("spPriceSaveBtn")) $("spPriceSaveBtn").addEventListener("click", async () => {
+  const prices = {};
+  let bad = "";
+  document.querySelectorAll('#spPriceRows tr').forEach(tr => {
+    const curEl = tr.querySelector('[data-spcur]'), amtEl = tr.querySelector('[data-spamt]');
+    if (!curEl || !amtEl) return;
+    const code = (curEl.value||"").trim().toLowerCase();
+    const amt = parseFloat(amtEl.value);
+    if (!code && isNaN(amt)) return;                 // skip blank rows
+    if (!/^[a-z]{3}$/.test(code)) { bad = `"${curEl.value}" isn't a 3-letter currency code.`; return; }
+    if (!(amt > 0)) { bad = `Enter a price for ${code.toUpperCase()}.`; return; }
+    prices[code] = amt;
+  });
+  const msg = $("spPriceMsg");
+  if (bad) { msg.style.color = "var(--bad)"; msg.textContent = bad; return; }
+  if (!Object.keys(prices).length) { msg.style.color = "var(--bad)"; msg.textContent = "Add at least one currency."; return; }
+  $("spPriceSaveBtn").disabled = true; msg.style.color = "var(--ink-2)"; msg.textContent = "Saving…";
+  try {
+    const fn = httpsCallable(fns, "setSelfPayPrices");
+    await fn({ prices });
+    msg.style.color = "var(--good)"; msg.textContent = "Saved. Members will see these currencies in the app.";
+    await loadSpPrices();
+  } catch(e){ msg.style.color = "var(--bad)"; msg.textContent = "Couldn't save: " + friendly(e); }
+  finally { $("spPriceSaveBtn").disabled = false; }
+});
+
+async function revokeSelfPay(email, btn){
+  if (btn.dataset.armed !== "1") { btn.dataset.armed="1"; btn.textContent="Confirm"; setTimeout(()=>{ if(btn.dataset.armed==="1"){btn.dataset.armed="0";btn.textContent="Revoke";}},4000); return; }
+  btn.disabled = true; btn.textContent="Revoking…";
+  try {
+    const fn = httpsCallable(fns, "revokeSelfPay");
+    await fn({ email });
+    await loadSelfPay();
+  } catch(e){ btn.disabled=false; btn.dataset.armed="0"; btn.textContent="Revoke"; alert("Couldn't revoke: "+friendly(e)); }
+}
+
+// Permanently delete a self-pay record (clears the row). Two-click confirm like Revoke.
+async function removeSelfPay(uid, email, btn){
+  if (btn.dataset.armed !== "1") { btn.dataset.armed="1"; btn.textContent="Delete?"; setTimeout(()=>{ if(btn.dataset.armed==="1"){btn.dataset.armed="0";btn.textContent="Remove";}},4000); return; }
+  btn.disabled = true; btn.textContent="Removing…";
+  try {
+    const fn = httpsCallable(fns, "deleteSelfPay");
+    await fn({ uid, email });
+    await loadSelfPay();
+  } catch(e){ btn.disabled=false; btn.dataset.armed="0"; btn.textContent="Remove"; alert("Couldn't remove: "+friendly(e)); }
+}
+</script>
+</body>
+</html>

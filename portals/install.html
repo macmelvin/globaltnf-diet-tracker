@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install ProteinTracker (Android)</title>
+<style>
+  :root{--ink:#0f1720;--muted:#5b6672;--line:#e6e9ee;--bg:#f6f8fa;--card:#fff;--brand:#2a78d6;--brand-d:#1f5fae;--amber:#c67b00;--amber-bg:#fdf3e2;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .page{max-width:660px;margin:0 auto;padding:28px 20px 44px;}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .logo{width:44px;height:44px;border-radius:11px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;}
+  h1{font-size:22px;margin:0;letter-spacing:-.01em;}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 0;}
+  .android{display:flex;align-items:center;gap:8px;background:#eef5ff;border:1px solid #cfe0fb;color:var(--brand-d);border-radius:10px;padding:10px 14px;font-size:14px;margin:18px 0;}
+  .dl{display:inline-block;background:var(--brand);color:#fff;text-decoration:none;padding:14px 26px;border-radius:10px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(42,120,214,.28);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 26px;box-shadow:0 1px 2px rgba(15,23,32,.04);}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:22px 0 0;}
+  .steps li{position:relative;padding:0 0 18px 44px;}
+  .steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px;}
+  .steps b{color:var(--ink);}
+  .steps p{margin:4px 0 0;color:var(--muted);line-height:1.55;font-size:14.5px;}
+  .warn{background:var(--amber-bg);border:1px solid #e6d3a1;border-radius:10px;padding:12px 15px;color:#7a4d00;font-size:14px;line-height:1.55;margin:8px 0 0;}
+  /* phone-dialog mockups */
+  .shots{display:flex;gap:16px;flex-wrap:wrap;margin:26px 0 0;justify-content:center;}
+  .shot{flex:1;min-width:230px;max-width:280px;}
+  .shot img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line);}
+  .cap{font-size:13px;color:var(--muted);margin-top:10px;text-align:center;}
+  .dlg{background:#20232b;color:#e7eaef;border-radius:20px;padding:20px 18px;font-size:13px;line-height:1.4;}
+  .dlg .appicon{width:44px;height:44px;border-radius:11px;background:#39d353;display:inline-grid;place-items:center;vertical-align:middle;}
+  .dlg .appicon b{display:block;width:16px;height:22px;background:#ff6a3d;border-radius:5px;}
+  .dlg .title{font-size:17px;font-weight:600;margin:12px 0 6px;color:#fff;}
+  .dlg .muted{color:#a7adb8;}
+  .dlg .row{display:flex;align-items:center;gap:10px;}
+  .dlg .btns{display:flex;justify-content:flex-end;gap:22px;margin-top:16px;font-weight:600;}
+  .dlg .btns .accent{color:#8ab4f8;}
+  .dlg .anyway{display:inline-block;border:2px solid #39d353;border-radius:10px;padding:9px 14px;color:#fff;font-weight:600;margin-top:14px;}
+  .dlg .ok{display:block;text-align:center;background:#8ab4f8;color:#202124;border-radius:22px;padding:11px;font-weight:600;margin-top:14px;}
+  .dlg .shield{text-align:center;color:#8ab4f8;font-weight:600;margin-bottom:6px;}
+  .center{text-align:center;}
+  .foot{margin-top:30px;color:var(--muted);font-size:13.5px;line-height:1.6;}
+  .foot a{color:var(--brand);}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="logo">P</div>
+    <div>
+      <h1>Install ProteinTracker</h1>
+      <p class="sub">Your free protein tracker &mdash; a couple of taps to set up.</p>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="android">&#128241; <b>Android only</b> &mdash; ProteinTracker runs on Android phones. It will not install on an iPhone / iOS.</div>
+
+    <div class="center"><a class="dl" href="/proteintracker.apk">Download the app (Android)</a></div>
+
+    <ol class="steps">
+      <li><b>Download</b><p>On your Android phone, tap the Download button above and let the file finish downloading.</p></li>
+      <li><b>Open &amp; install</b><p>Open the downloaded <b>ProteinTracker.apk</b> file and tap <b>Install</b>.</p></li>
+      <li><b>Open More details</b>
+        <p>Because the app isn&rsquo;t from the Google Play Store, Android may show a <b>Play Protect</b> warning. This is completely normal. Tap <b>&ldquo;More details&rdquo;</b>.</p>
+      </li>
+      <li><b>Allow the installation</b><p>Tap <b>&ldquo;Install anyway&rdquo;</b>, then <b>OK</b>. If asked, allow installs from this source.</p></li>
+      <li><b>Sign in</b><p>Open the app and sign in with <b>the same email address your gym used to enroll you</b>. That&rsquo;s it &mdash; start tracking!</p></li>
+    </ol>
+
+    <div class="shots">
+      <div class="shot">
+        <img src="/install-step-1.png" alt="Android installation prompt showing the Install button">
+        <div class="cap">1. Tap <b>Install</b></div>
+      </div>
+      <div class="shot">
+        <img src="/install-step-2.jpeg" alt="Google Play Protect prompt showing the More details option">
+        <div class="cap">2. Tap <b>More details</b></div>
+      </div>
+      <div class="shot">
+        <img src="/install-step-3.png" alt="Google Play Protect prompt showing the Install anyway option">
+        <div class="cap">3. Tap <b>Install anyway</b></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Trouble installing? Email <a href="mailto:proteintracker50@gmail.com">proteintracker50@gmail.com</a> and we&rsquo;ll help you get set up.</p>
+</div>
+</body>
+</html>

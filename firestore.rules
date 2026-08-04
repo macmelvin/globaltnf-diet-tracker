@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------ helpers
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == "U51HtMKGzMPObg48Ry2h4KzudBX2";
+    }
+    function isGymOwner(gymId) {
+      return request.auth != null && request.auth.token.gymId == gymId;
+    }
+    // A member may use the tracker only while active. A MISSING flag counts as
+    // allowed, so nobody is locked out before you run the backfill.
+    function memberActive(userId) {
+      return !exists(/databases/$(database)/documents/memberAccess/$(userId))
+          || get(/databases/$(database)/documents/memberAccess/$(userId))
+               .data.get('active', true) == true;
+    }
+
+    // --------------------------------------------------------------- user doc
+    // Unchanged from your original: owner reads/writes their own user doc.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Profile — identity data, NEVER gated (so the app can always load the user).
+    match /users/{userId}/profile/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Usage — read gated; writes stay backend-only (as in your original rules).
+    match /users/{userId}/usage/{monthId} {
+      allow read: if isOwner(userId) && memberActive(userId);
+      allow write: if false;
+    }
+
+    // Enrollments — member reads own; gym owner reads its own + toggles status;
+    // admin full. Members canNOT write their own enrollment (this is what stops
+    // a member from self-activating a sponsorship).
+    match /users/{userId}/enrollments/{gymId} {
+      allow read: if isOwner(userId) || isAdmin() || isGymOwner(gymId);
+      allow create: if isAdmin();
+      allow delete: if isAdmin() || isGymOwner(gymId);
+      allow update: if isAdmin()
+                    || ( isGymOwner(gymId)
+                         && request.resource.data.gymId == resource.data.gymId
+                         && request.resource.data.diff(resource.data)
+                              .affectedKeys().hasOnly(['status','coachEndedAt','lastToggledAt'])
+                         && request.resource.data.status in ['active','inactive'] );
+    }
+
+    // ALL other tracker subcollections — entries, measurements, favorites,
+    // weights, meals, and anything else the app uses — owner access, GATED on
+    // being active. This wildcard covers every subcollection automatically, so
+    // no feature gets missed; profile / usage / enrollments are handled above and
+    // excluded here.
+    match /users/{userId}/{coll}/{document=**} {
+      allow read, write: if isOwner(userId)
+                         && coll != 'profile'
+                         && coll != 'usage'
+                         && coll != 'enrollments'
+                         && memberActive(userId);
+    }
+
+    // ------------------------------------------- the gate flag (backend-written)
+    match /memberAccess/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // only Cloud Functions (Admin SDK) write this
+    }
+
+    // ------------------------------- self-pay (direct B2C) entitlement flag
+    match /selfPay/{userId} {
+      allow read:  if isOwner(userId) || isAdmin();
+      allow write: if false; // only Cloud Functions (Admin SDK) write this
+    }
+
+    // ------------------------------------------------------------------ gyms
+    match /gyms/{gymId} {
+      allow read:  if isAdmin() || isGymOwner(gymId);
+      allow write: if isAdmin();   // admin console enrolls gyms / edits rates
+
+      match /billingSnapshots/{period} {
+        allow read:  if isAdmin() || isGymOwner(gymId);
+        allow write: if isAdmin(); // billing function uses Admin SDK (bypasses rules)
+      }
+    }
+
+    // ------------------------------------------- gym-owner mapping (backend-made)
+    match /gymOwners/{uid} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+
+    // ------------------------- pending enrollments (invited-by-email, pre-signup)
+    // Backend-written only. A gym owner may LIST their own pending invites so the
+    // portal can show "invited, hasn't joined yet"; admin sees all. Keyed on the
+    // gymId DATA FIELD so the portal's  where("gymId","==", <gym>)  query is
+    // provable by the rules engine.
+    match /pendingEnrollments/{doc} {
+      allow read:   if isAdmin()
+                    || ( request.auth != null
+                         && request.auth.token.gymId == resource.data.gymId );
+      allow delete: if isAdmin()
+                    || ( request.auth != null
+                         && request.auth.token.gymId == resource.data.gymId );
+      allow create, update: if false; // only Cloud Functions (Admin SDK) create these
+    }
+
+    // -------------------------- collection-group: admin + gym-portal enrollment reads
+    // NOTE: keyed on the gymId DATA FIELD (not the doc id) so a gym owner's
+    // collection-group query  where("gymId","==", <their gym>)  is provable by
+    // the rules engine. Keying on the {doc} id fails collection-group queries.
+    match /{path=**}/enrollments/{doc} {
+      allow read: if isAdmin()
+                  || ( request.auth != null
+                       && request.auth.token.gymId == resource.data.gymId );
+    }
+  }
+}

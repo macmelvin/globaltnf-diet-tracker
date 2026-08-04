@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diet Tracker — hit your protein, every day</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12b981">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Diet Tracker">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="app-icon-192.png">
+<style>
+  :root{
+    --bg:#f6f8f7; --surface:#ffffff; --ink:#0e1b16; --ink-2:#43514b; --muted:#8a988f;
+    --line:#e6ece9; --accent:#12b981; --accent-ink:#0a8f63; --accent-soft:#e6f7f0;
+    --amber:#f59e0b; --danger:#e05353; --radius:18px;
+    --shadow:0 1px 2px rgba(16,27,22,.04), 0 12px 30px rgba(16,27,22,.06);
+    --grad:linear-gradient(135deg,#12b981 0%,#0ea5a5 55%,#0891b2 100%);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .btn{display:inline-flex;align-items:center;gap:9px;justify-content:center;border:none;border-radius:999px;
+    font-family:var(--font);font-size:16px;font-weight:650;padding:13px 22px;cursor:pointer;transition:transform .06s ease,box-shadow .2s ease,background .2s}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(14,165,165,.28)}
+  .btn.primary:hover{box-shadow:0 10px 26px rgba(14,165,165,.36)}
+  .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:#cfe0d8}
+  .btn.lg{font-size:17px;padding:15px 28px}
+  .btn.sm{font-size:14px;padding:9px 15px}
+  .btn:disabled{opacity:.55;cursor:default}
+
+  /* ---------- top nav ---------- */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(246,248,247,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.2px}
+  .logo{width:34px;height:34px;border-radius:10px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 14px rgba(14,165,165,.3)}
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{color:var(--ink-2);font-weight:600;font-size:15px}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:720px){.nav-links a{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:78px 0 64px}
+  .hero:before{content:"";position:absolute;inset:0;background:
+    radial-gradient(60% 60% at 78% 8%,rgba(18,185,129,.14),transparent 60%),
+    radial-gradient(50% 50% at 8% 90%,rgba(8,145,178,.12),transparent 60%);pointer-events:none}
+  .hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:34px}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent-ink);
+    font-weight:700;font-size:13px;padding:6px 13px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-1.2px;margin:0 0 16px;font-weight:850}
+  h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:19px;color:var(--ink-2);max-width:520px;margin:0 0 28px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .trust{margin-top:22px;display:flex;gap:20px;color:var(--muted);font-size:14px;flex-wrap:wrap}
+  .trust b{color:var(--ink)}
+
+  /* hero card mock */
+  .hero-card{background:var(--surface);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:26px}
+  .ring-wrap{display:flex;align-items:center;gap:22px}
+  .mini-ring{flex:none}
+  .hc-meta .big{font-size:30px;font-weight:850;letter-spacing:-.5px}
+  .hc-meta .lbl{color:var(--muted);font-size:14px}
+  .hc-bars{display:flex;gap:8px;align-items:flex-end;height:64px;margin-top:22px}
+  .hc-bars span{flex:1;background:var(--accent-soft);border-radius:6px 6px 3px 3px;position:relative}
+  .hc-bars span:after{content:"";position:absolute;left:0;right:0;bottom:0;background:var(--grad);border-radius:6px 6px 3px 3px;height:var(--h)}
+  .hc-list{margin-top:20px;border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+  .hc-item{display:flex;justify-content:space-between;font-size:14px;color:var(--ink-2)}
+  .hc-item b{color:var(--ink)}
+  /* hero photo */
+  .hero-photo{position:relative;border-radius:26px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 50px rgba(16,27,22,.18)}
+  .hero-photo img{width:100%;display:block}
+  .hero-badge{position:absolute;left:16px;bottom:16px;display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-radius:16px;padding:9px 15px 9px 11px;box-shadow:0 12px 28px rgba(16,27,22,.22)}
+
+  /* ---------- demo video ---------- */
+  .video-frame{max-width:400px;margin:0 auto;border-radius:28px;overflow:hidden;border:1px solid var(--line);
+    box-shadow:0 22px 50px rgba(16,27,22,.18);background:#0b0f0d;aspect-ratio:9/16}
+  .video-frame video{width:100%;height:100%;display:block;object-fit:cover;background:#0b0f0d}
+
+  /* ---------- sections ---------- */
+  section.pad{padding:72px 0}
+  .sec-head{text-align:center;max-width:620px;margin:0 auto 44px}
+  .sec-head h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.6px;margin:0 0 12px;font-weight:820}
+  .sec-head p{color:var(--ink-2);font-size:18px;margin:0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:820px){.features{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+  .card .ic{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:22px;margin-bottom:16px}
+  .card h3{margin:0 0 8px;font-size:19px;letter-spacing:-.2px}
+  .card p{margin:0;color:var(--ink-2);font-size:15.5px}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:step}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{position:relative;padding:26px 24px 24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+  .step:before{counter-increment:step;content:counter(step);position:absolute;top:-16px;left:24px;width:34px;height:34px;border-radius:10px;background:var(--grad);color:#fff;font-weight:800;display:grid;place-items:center;box-shadow:0 6px 14px rgba(14,165,165,.3)}
+  .step h3{margin:10px 0 6px;font-size:18px}
+  .step p{margin:0;color:var(--ink-2);font-size:15px}
+
+  .band{background:var(--grad);border-radius:26px;padding:46px 40px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;box-shadow:0 18px 40px rgba(14,165,165,.28)}
+  .band h2{margin:0 0 6px;font-size:clamp(24px,3vw,32px);letter-spacing:-.5px}
+  .band p{margin:0;opacity:.92;font-size:17px}
+  .band .btn.primary{background:#fff;color:var(--accent-ink);box-shadow:0 10px 24px rgba(0,0,0,.14)}
+
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:14px}
+  .foot-in{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  .foot-links{display:flex;gap:20px;flex-wrap:wrap}
+  .foot-links a:hover{color:var(--ink)}
+
+  /* ---------- app / tracker ---------- */
+  #app{display:none}
+  .app-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 0 8px}
+  .hi{font-size:24px;font-weight:820;letter-spacing:-.4px}
+  .hi small{display:block;color:var(--muted);font-size:14px;font-weight:500;margin-top:2px}
+  .app-grid{display:grid;grid-template-columns:340px 1fr;gap:22px;padding:14px 0 0;align-items:start}
+  @media(max-width:820px){.app-grid{grid-template-columns:1fr}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+  .panel h3{margin:0 0 14px;font-size:16px;letter-spacing:-.2px}
+  .ring-big{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+  .ring-num{font-size:44px;font-weight:850;letter-spacing:-1px;line-height:1}
+  .ring-of{color:var(--muted);font-size:15px}
+  .goal-line{margin-top:10px;font-size:15px;font-weight:650}
+  .goal-line.met{color:var(--accent-ink)}
+  .goal-line.left{color:var(--ink-2)}
+  .row{display:flex;gap:10px}
+  .input{width:100%;font-family:var(--font);font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fbfdfc;color:var(--ink)}
+  .input:focus{outline:none;border-color:var(--accent);background:#fff}
+  .field-lbl{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 5px}
+  .entries{display:flex;flex-direction:column}
+  .entry{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  .entry:last-child{border-bottom:none}
+  .entry>div:first-child{flex:1;min-width:0}
+  .entry .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .entry .tm{color:var(--muted);font-size:13px}
+  .entry .gr{margin-left:auto;font-weight:750;white-space:nowrap}
+  .icon-btn{border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:18px;padding:4px 6px;border-radius:8px}
+  .icon-btn:hover{background:#f0f4f2;color:var(--danger)}
+  .empty{color:var(--muted);text-align:center;padding:26px 0;font-size:15px}
+  .chart{display:flex;gap:9px;align-items:flex-end;height:150px;padding-top:8px}
+  .chart .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%}
+  .chart .col{width:100%;flex:1;display:flex;align-items:flex-end}
+  .chart .fill{width:100%;background:var(--accent-soft);border-radius:7px 7px 4px 4px;position:relative;min-height:3px}
+  .chart .fill i{position:absolute;left:0;right:0;bottom:0;background:var(--grad);border-radius:7px 7px 4px 4px;height:var(--h,0%)}
+  .chart .fill.met i{background:linear-gradient(180deg,#12b981,#0a8f63)}
+  .chart .d{font-size:12px;color:var(--muted)}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .chip{border:1px solid var(--line);background:#fbfdfc;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;cursor:pointer}
+  .chip:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .stat-row{display:flex;gap:12px;margin-top:2px}
+  .stat{flex:1;background:#fbfdfc;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .stat .v{font-size:22px;font-weight:800}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);color:#fff;padding:12px 18px;border-radius:12px;font-size:14.5px;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.22);display:none;max-width:90vw;text-align:center}
+  .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .center-load{min-height:60vh;display:grid;place-items:center;color:var(--muted)}
+  /* health & progress */
+  .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+  @media(max-width:820px){.hgrid{grid-template-columns:1fr}}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .seg button{border:1px solid var(--line);background:#fbfdfc;border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+  .seg button.on{background:var(--accent-soft);border-color:#bfe8d6;color:var(--accent-ink)}
+  .mrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:14.5px}
+  .mrow:last-child{border-bottom:none}
+  .mrow .d{color:var(--muted);font-size:13px}
+  .mrow .v{margin-left:auto;font-weight:750}
+  .lchart{width:100%;height:150px;display:block;margin-top:4px}
+  .meal-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:#fbfdfc}
+  .meal-card:last-child{margin-bottom:0}
+  .meal-top{display:flex;align-items:center;gap:10px}
+  .meal-top .nm{font-weight:700}
+  .meal-top .tot{margin-left:auto;font-weight:750;color:var(--accent-ink)}
+  .meal-items{color:var(--ink-2);font-size:13.5px;margin-top:5px}
+  .waterdots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .waterdots i{width:22px;height:22px;border-radius:7px;background:var(--line);display:inline-block}
+  .waterdots i.on{background:linear-gradient(180deg,#38bdf8,#0891b2)}
+</style>
+</head>
+<body>
+
+<!-- boot loader -->
+<div id="boot" class="center-load"><div><span class="spin" style="border-color:rgba(18,185,129,.25);border-top-color:var(--accent)"></span></div></div>
+
+<!-- ============ PUBLIC LANDING ============ -->
+<div id="landing" style="display:none">
+  <header class="nav">
+    <div class="wrap nav-in">
+      <div class="brand"><span class="logo">P</span> Diet Tracker</div>
+      <nav class="nav-links">
+        <a href="#demo">Demo</a>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#gyms">For gyms</a>
+        <button class="btn ghost sm" id="navSignIn">Sign in</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">🥗 Built for people serious about their nutrition</span>
+        <h1>Hit your <span class="hl">protein goal</span><br>every single day.</h1>
+        <p class="sub">Log a meal in seconds, watch your daily total climb, and keep the streak going — on your phone or right here in your browser. Your gym can sponsor it, or go solo.</p>
+        <div class="cta-row">
+          <button class="btn primary lg" id="heroStart">Start tracking free</button>
+          <a class="btn ghost lg" href="#how">See how it works</a>
+        </div>
+        <div class="trust">
+          <span><b>Syncs</b> with the app</span>
+          <span><b>No ads</b>, ever</span>
+          <span><b>Cancel</b> anytime</span>
+        </div>
+      </div>
+
+      <div class="hero-photo" aria-hidden="true">
+        <img src="hero.jpg" alt="A man and woman working out together in a gym">
+        <div class="hero-badge">
+          <svg width="50" height="50" viewBox="0 0 104 104">
+            <circle cx="52" cy="52" r="44" fill="none" stroke="#e6ece9" stroke-width="13"/>
+            <circle cx="52" cy="52" r="44" fill="none" stroke="url(#gb)" stroke-width="13" stroke-linecap="round"
+              stroke-dasharray="276" stroke-dashoffset="63" transform="rotate(-90 52 52)"/>
+            <defs><linearGradient id="gb" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#12b981"/><stop offset="1" stop-color="#0891b2"/></linearGradient></defs>
+          </svg>
+          <div>
+            <div style="font-weight:800;font-size:16px;letter-spacing:-.2px">108 <span style="color:var(--muted);font-weight:600">/ 140g</span></div>
+            <div style="color:var(--muted);font-size:12px">Protein today · 77%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pad" id="demo" style="padding-top:14px">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>See it in action</h2>
+        <p>A quick look at logging a meal, hitting your goal, and tracking your week.</p>
+      </div>
+      <div class="video-frame">
+        <video controls playsinline preload="none" poster="demo-poster.png">
+          <source src="demo.mp4" type="video/mp4">
+          Your browser can't play this video. <a href="demo.mp4">Download it here.</a>
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Everything you need, nothing you don't</h2>
+        <p>Designed to be effortless — big text, quick logging, and numbers that actually mean something.</p>
+      </div>
+      <div class="features">
+        <div class="card"><div class="ic">⚡</div><h3>Log in seconds</h3><p>Type a food and grams, or tap a favourite. Your daily total updates instantly across every device.</p></div>
+        <div class="card"><div class="ic">🎯</div><h3>A goal that fits you</h3><p>Set a custom daily target — the same goal you use in the app. See exactly how many grams you have left.</p></div>
+        <div class="card"><div class="ic">📈</div><h3>See your week</h3><p>A simple 7-day chart shows which days you hit target, so momentum is obvious and easy to keep.</p></div>
+        <div class="card"><div class="ic">🔄</div><h3>Phone &amp; web in sync</h3><p>Log on your laptop at lunch, check on your phone at dinner. One account, one set of numbers.</p></div>
+        <div class="card"><div class="ic">🏋️</div><h3>Gym-friendly</h3><p>If your gym sponsors Diet Tracker, your access is included. No gym? Keep going on your own.</p></div>
+        <div class="card"><div class="ic">🔒</div><h3>Private by design</h3><p>Your data is yours. No ads, no selling. Delete your account and everything with it, anytime.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="how" style="padding-top:20px">
+    <div class="wrap">
+      <div class="sec-head"><h2>Three steps to a better week</h2><p>You'll be logging your first meal about a minute from now.</p></div>
+      <div class="steps">
+        <div class="step"><h3>Sign in</h3><p>Use your Google account — the same one you use in the Diet Tracker app.</p></div>
+        <div class="step"><h3>Set your goal</h3><p>Pick your daily protein target. We'll show your progress as a ring you fill up each day.</p></div>
+        <div class="step"><h3>Log &amp; go</h3><p>Add meals as you eat. Watch the number climb, keep the streak, feel stronger.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="stories" style="padding-top:20px">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Stronger, together</h2>
+        <p>Trainers and members on how Diet Tracker fits into their week.</p>
+      </div>
+      <div class="features">
+        <div class="card">
+          <div style="color:var(--accent-ink);font-size:26px;line-height:1;font-weight:850;margin-bottom:6px">&ldquo;</div>
+          <p style="font-size:15.5px;line-height:1.62;color:var(--ink-2);margin:0 0 16px">Getting enough protein between sessions is the hardest part of coaching clients. Now they snap a photo of their meal and it&rsquo;s tracked — I finally have real numbers to coach from instead of guesswork.</p>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="logo" style="width:40px;height:40px;font-size:15px">MT</div>
+            <div><div style="font-weight:750;font-size:15px">Marcus Tan</div><div style="color:var(--muted);font-size:13px">Strength &amp; Conditioning Coach</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="color:var(--accent-ink);font-size:26px;line-height:1;font-weight:850;margin-bottom:6px">&ldquo;</div>
+          <p style="font-size:15.5px;line-height:1.62;color:var(--ink-2);margin:0 0 16px">We sponsor it for every member on our nutrition programme. The daily reminders and the streak keep them consistent between visits — retention is the best it&rsquo;s ever been.</p>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="logo" style="width:40px;height:40px;font-size:15px">FR</div>
+            <div><div style="font-weight:750;font-size:15px">Farah Rahman</div><div style="color:var(--muted);font-size:13px">Head Trainer &amp; Studio Owner</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="color:var(--accent-ink);font-size:26px;line-height:1;font-weight:850;margin-bottom:6px">&ldquo;</div>
+          <p style="font-size:15.5px;line-height:1.62;color:var(--ink-2);margin:0 0 16px">I was eating half the protein I needed without knowing it. Six months on, I&rsquo;m lifting heavier than ever and I&rsquo;m not winded on the stairs. Didn&rsquo;t expect a little app to do that.</p>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="logo" style="width:40px;height:40px;font-size:15px">DO</div>
+            <div><div style="font-weight:750;font-size:15px">David Ong</div><div style="color:var(--muted);font-size:13px">Member</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="color:var(--accent-ink);font-size:26px;line-height:1;font-weight:850;margin-bottom:6px">&ldquo;</div>
+          <p style="font-size:15.5px;line-height:1.62;color:var(--ink-2);margin:0 0 16px">I photograph my chicken rice or tau huay and it tells me the protein — no weighing, no Googling. Watching my streak and weight trend go the right way is the first thing that&rsquo;s actually stuck.</p>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="logo" style="width:40px;height:40px;font-size:15px">SL</div>
+            <div><div style="font-weight:750;font-size:15px">Susan Lim</div><div style="color:var(--muted);font-size:13px">Member</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="color:var(--accent-ink);font-size:26px;line-height:1;font-weight:850;margin-bottom:6px">&ldquo;</div>
+          <p style="font-size:15.5px;line-height:1.62;color:var(--ink-2);margin:0 0 16px">The barcode scan logs my yogurt in two seconds, and when I&rsquo;m short it suggests local foods I&rsquo;ll actually eat. More energy, less belly — best perk my gym has given me.</p>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="logo" style="width:40px;height:40px;font-size:15px">RK</div>
+            <div><div style="font-weight:750;font-size:15px">Ravi Kumar</div><div style="color:var(--muted);font-size:13px">Member</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:26px">
+        <button class="btn primary" id="shareStoryBtn">✍️ Share your story</button>
+      </div>
+      <div id="storyForm" class="card" style="display:none;max-width:560px;margin:16px auto 0;text-align:left">
+        <h3 style="margin:0 0 4px">Share your story</h3>
+        <p style="color:var(--muted);font-size:13px;margin:0 0 14px">Tell us how Diet Tracker has helped you. With your permission, we may feature it here.</p>
+        <div class="field-lbl">Your name</div>
+        <input class="input" id="stName" placeholder="Name" style="margin-bottom:10px" maxlength="70">
+        <div class="field-lbl">You are a…</div>
+        <select class="input" id="stRole" style="margin-bottom:10px"><option value="Member">A member</option><option value="Trainer">A trainer</option></select>
+        <div class="field-lbl">Your gym (optional)</div>
+        <input class="input" id="stGym" placeholder="Gym name" style="margin-bottom:10px" maxlength="80">
+        <div class="field-lbl">Your story</div>
+        <textarea class="input" id="stStory" rows="4" placeholder="How has Diet Tracker helped your fitness journey?" style="margin-bottom:12px;resize:vertical" maxlength="1000"></textarea>
+        <button class="btn primary" id="stSubmit" style="width:100%">Send my story</button>
+        <div id="stMsg" style="font-size:13.5px;margin-top:10px"></div>
+      </div>
+
+      <p style="text-align:center;color:var(--muted);font-size:12.5px;margin:26px auto 0;max-width:620px">Stories reflect the experiences of Diet Tracker members and partner trainers.</p>
+    </div>
+  </section>
+
+  <script type="module">
+    // Self-contained handler for the "Share your story" form — reuses the page's
+    // Firebase app if it's already initialised, otherwise initialises it. Writes a
+    // pending submission to testimonialSubmissions for review (see Firestore rules).
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    const _cfg = { apiKey:"PLACEHOLDER_NEW_FIREBASE_API_KEY", authDomain:"PLACEHOLDER_PROJECT.web.app", projectId:"PLACEHOLDER_PROJECT", storageBucket:"PLACEHOLDER_PROJECT.firebasestorage.app", messagingSenderId:"PLACEHOLDER_SENDER_ID", appId:"PLACEHOLDER_APP_ID" };
+    const _app = getApps().length ? getApp() : initializeApp(_cfg);
+    const _sdb = getFirestore(_app);
+    const _g = id => document.getElementById(id);
+    _g("shareStoryBtn").addEventListener("click", () => {
+      const f = _g("storyForm");
+      const opening = f.style.display === "none";
+      f.style.display = opening ? "block" : "none";
+      if (opening) f.scrollIntoView({ behavior:"smooth", block:"center" });
+    });
+    _g("stSubmit").addEventListener("click", async () => {
+      const name=(_g("stName").value||"").trim(), role=_g("stRole").value,
+            gym=(_g("stGym").value||"").trim(), story=(_g("stStory").value||"").trim(), msg=_g("stMsg");
+      if(!name){ msg.style.color="#b3352f"; msg.textContent="Please enter your name."; return; }
+      if(story.length<10){ msg.style.color="#b3352f"; msg.textContent="Please write a sentence or two about your experience."; return; }
+      _g("stSubmit").disabled=true; msg.style.color="#8a988f"; msg.textContent="Sending…";
+      try{
+        await addDoc(collection(_sdb,"testimonialSubmissions"), { name:name.slice(0,70), role, gym:gym.slice(0,80), story:story.slice(0,1000), status:"pending", createdAt: serverTimestamp() });
+        _g("storyForm").querySelectorAll("input,textarea").forEach(el=>el.value="");
+        msg.style.color="#0a8f63"; msg.textContent="Thank you! Your story has been sent for review. 🙌";
+      }catch(e){ msg.style.color="#b3352f"; msg.textContent="Couldn't send right now — please try again later."; }
+      finally{ _g("stSubmit").disabled=false; }
+    });
+  </script>
+
+  <section class="pad" id="gyms" style="padding-top:20px">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2>Run a gym? Sponsor your members.</h2>
+          <p>Give your members a protein tool they'll actually use — you only pay for the ones who do.</p>
+        </div>
+        <a class="btn primary lg" id="gymCta" href="mailto:hello@strengthfocus.com?subject=Gym%20Partnership%20Inquiry&body=Gym%20name%3A%0AYour%20name%3A%0ANumber%20of%20members%20interested%3A%0A">Get started</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap foot-in">
+      <div class="brand" style="font-size:16px"><span class="logo" style="width:28px;height:28px;font-size:15px">P</span> Diet Tracker</div>
+      <div class="foot-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/delete-account">Delete account</a>
+        <a href="#features">Features</a>
+        <button class="btn ghost sm" id="footSignIn">Sign in</button>
+      </div>
+    </div>
+    <div class="wrap" style="margin-top:14px">© 2026 Diet Tracker. Made for stronger days.</div>
+  </footer>
+</div>
+
+<!-- ============ SIGNED-IN TRACKER ============ -->
+<div id="app">
+  <header class="nav">
+    <div class="wrap nav-in">
+      <div class="brand"><span class="logo">P</span> Diet Tracker</div>
+      <button class="btn ghost sm" id="signOut">Sign out</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="app-head">
+      <div class="hi" id="greeting">Today<small id="dateLine"></small></div>
+    </div>
+
+    <div id="trialBanner" style="display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:11px 16px;margin:6px 0 2px">
+      <span style="color:var(--accent-ink);font-weight:650;font-size:14.5px" id="trialText">Free trial</span>
+      <button class="btn primary sm" id="trialSubBtn">Subscribe now</button>
+    </div>
+
+    <div class="app-grid">
+      <!-- left: ring + goal -->
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div class="panel">
+          <div class="ring-big">
+            <svg width="188" height="188" viewBox="0 0 188 188" id="ringSvg">
+              <circle cx="94" cy="94" r="80" fill="none" stroke="#e6ece9" stroke-width="16"/>
+              <circle id="ringFg" cx="94" cy="94" r="80" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round"
+                stroke-dasharray="502.65" stroke-dashoffset="502.65" transform="rotate(-90 94 94)" style="transition:stroke-dashoffset .5s ease"/>
+              <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12b981"/><stop offset="1" stop-color="#0891b2"/></linearGradient></defs>
+            </svg>
+            <div style="margin-top:-118px;margin-bottom:70px">
+              <div class="ring-num" id="totalG">0</div>
+              <div class="ring-of" id="goalOf">grams today</div>
+            </div>
+            <div class="goal-line left" id="goalLine"></div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="field-lbl">Daily goal (grams)</div>
+            <div class="row">
+              <input class="input" id="goalInput" type="number" min="0" step="1" placeholder="e.g. 140" inputmode="numeric">
+              <button class="btn ghost" id="saveGoal">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="profilePanel">
+          <h3>Tell us about you</h3>
+          <div style="font-size:13px;color:var(--muted);margin:-4px 0 12px">Used to work out your daily protein target. A goal you save above overrides this.</div>
+          <div class="field-lbl">Your name</div>
+          <input class="input" id="pfName" placeholder="Name" autocomplete="name">
+          <div class="row" style="gap:12px;margin-top:12px">
+            <div style="flex:1"><div class="field-lbl">Birth year</div><input class="input" id="pfBirthYear" type="number" min="1900" max="2100" step="1" placeholder="1970" inputmode="numeric"></div>
+            <div style="flex:1"><div class="field-lbl">Weight (kg)</div><input class="input" id="pfWeight" type="number" min="0" step="0.1" placeholder="70" inputmode="decimal"></div>
+          </div>
+          <div class="field-lbl" style="margin-top:12px">Sex</div>
+          <div class="seg" id="pfSexSeg"></div>
+          <div class="field-lbl" style="margin-top:4px">Your goal</div>
+          <div class="seg" id="pfGoalSeg"></div>
+          <div id="pfCalc" style="font-size:14px;font-weight:650;color:var(--accent-ink);background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:10px 13px;margin-top:6px"></div>
+          <button class="btn primary" id="pfSave" style="width:100%;margin-top:12px">Save details</button>
+        </div>
+
+        <div class="panel" id="macroPanel" style="display:none">
+          <h3>Today's totals</h3>
+          <div class="stat-row">
+            <div class="stat"><div class="v" id="mCal">0</div><div class="l">calories</div></div>
+            <div class="stat"><div class="v" id="mCarb">0</div><div class="l">carbs (g)</div></div>
+            <div class="stat"><div class="v" id="mFat">0</div><div class="l">fat (g)</div></div>
+            <div class="stat"><div class="v" id="mSugar">0</div><div class="l">sugar (g)</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:10px">Estimated from your photo scans.</div>
+        </div>
+
+        <div class="panel">
+          <h3>This week</h3>
+          <div class="stat-row" style="margin-bottom:16px">
+            <div class="stat"><div class="v" id="stStreak">0</div><div class="l">day streak</div></div>
+            <div class="stat"><div class="v" id="stAvg">0</div><div class="l">g/day avg</div></div>
+            <div class="stat"><div class="v" id="stHit">0/7</div><div class="l">goals hit</div></div>
+          </div>
+          <div class="chart" id="chart"></div>
+        </div>
+
+        <div class="panel" id="mealPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <h3 style="margin:0">Meal targets</h3>
+            <button class="btn ghost sm" id="mealTimesBtn">Meal times</button>
+          </div>
+          <div id="mealTargets" style="margin-top:12px"><div class="empty">Set a daily goal to see your meal targets.</div></div>
+          <div id="mealTimesEditor" style="display:none;border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+            <div class="row" style="gap:12px">
+              <div style="flex:1"><div class="field-lbl">Lunch starts</div><input class="input" id="lunchTime" type="time"></div>
+              <div style="flex:1"><div class="field-lbl">Dinner starts</div><input class="input" id="dinnerTime" type="time"></div>
+            </div>
+            <button class="btn primary sm" id="mealTimesSave" style="margin-top:8px">Save meal times</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <h3 style="margin:0">Water</h3>
+            <div class="row" style="gap:8px">
+              <button class="btn ghost sm" id="waterMinus" style="min-width:38px">−</button>
+              <button class="btn primary sm" id="waterPlus" style="min-width:38px">＋</button>
+            </div>
+          </div>
+          <div id="waterCount" style="font-size:15px;font-weight:650;margin-top:8px">0 of 8 glasses</div>
+          <div class="waterdots" id="waterDots"></div>
+        </div>
+      </div>
+
+      <!-- right: add + entries -->
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div class="panel">
+          <h3>Add food</h3>
+          <input type="file" accept="image/*" capture="environment" id="foodPhoto" style="display:none">
+          <button class="btn primary" id="photoBtn" style="width:100%">📷 Add with a photo</button>
+          <button class="btn ghost" id="barcodeBtn" style="width:100%;margin-top:8px">📦 Scan a barcode</button>
+          <div id="barcodeBox" style="display:none;margin-top:10px">
+            <div id="barcodeReader" style="width:100%;border-radius:12px;overflow:hidden"></div>
+            <div class="row" style="gap:8px;margin-top:8px">
+              <input class="input" id="barcodeNum" placeholder="or type the barcode number" inputmode="numeric">
+              <button class="btn ghost sm" id="barcodeLookup">Look up</button>
+            </div>
+            <button class="btn ghost sm" id="barcodeClose" style="margin-top:6px">Close scanner</button>
+          </div>
+          <div id="aiHint" style="display:none;font-size:13.5px;color:var(--ink-2);background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:10px 13px;margin-top:10px"></div>
+          <div class="field-lbl" style="text-align:center;color:var(--muted);margin:14px 0 12px">or enter it manually</div>
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:1"><div class="field-lbl">Food</div><input class="input" id="foodName" placeholder="Chicken breast" autocomplete="off"></div>
+            <div style="width:120px"><div class="field-lbl">Protein (g)</div><input class="input" id="foodGrams" type="number" min="1" step="1" placeholder="30" inputmode="numeric"></div>
+            <button class="btn primary" id="addFood">Add</button>
+          </div>
+          <div class="chip-row" id="quickChips">
+            <button class="chip" data-g="25">Shake · 25g</button>
+            <button class="chip" data-g="17">Greek yogurt · 17g</button>
+            <button class="chip" data-g="6">Egg · 6g</button>
+            <button class="chip" data-g="43">Chicken · 43g</button>
+          </div>
+        </div>
+
+        <div class="panel" id="suggestPanel">
+          <h3>Suggest foods</h3>
+          <div style="font-size:13px;color:var(--muted);margin:-2px 0 10px">AI ideas to hit the rest of today's protein, tuned to what you usually eat.</div>
+          <button class="btn primary" id="suggestBtn" style="width:100%">✨ Suggest foods for the rest of today</button>
+          <div id="suggestList" style="margin-top:10px"></div>
+          <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div class="field-lbl" style="margin:0">Food recommendations</div>
+              <button class="btn ghost sm" id="recToggle">Change</button>
+            </div>
+            <div id="recEditor" style="display:none;margin-top:10px">
+              <div class="field-lbl">Where are you based?</div>
+              <div class="seg" id="recCountrySeg"></div>
+              <div class="field-lbl" style="margin-top:8px">What do you usually eat?</div>
+              <div class="seg" id="recCuisineSeg"></div>
+              <button class="btn primary sm" id="recSave" style="margin-top:10px">Save preferences</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Today's log</h3>
+          <div class="entries" id="entries"><div class="empty">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hgrid">
+      <div class="panel">
+        <h3>Weight &amp; trend</h3>
+        <div class="row" style="align-items:flex-end;margin-bottom:2px">
+          <div style="flex:1"><div class="field-lbl">Weight (kg)</div><input class="input" id="weightIn" type="number" step="0.1" min="0" placeholder="80.5" inputmode="decimal"></div>
+          <button class="btn primary" id="addWeight">Log</button>
+        </div>
+        <svg class="lchart" id="weightChart" viewBox="0 0 320 150" preserveAspectRatio="none"></svg>
+        <div id="weightLatest" style="color:var(--muted);font-size:13.5px;margin-top:2px"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Body measurements</h3>
+        <div class="seg" id="mSeg"></div>
+        <div class="row" style="align-items:flex-end;margin-bottom:8px" id="mAddRow">
+          <div style="flex:1"><div class="field-lbl" id="mLbl">Value</div><input class="input" id="mIn" type="number" step="0.1" min="0" inputmode="decimal"></div>
+          <button class="btn primary" id="mAdd">Add</button>
+        </div>
+        <div id="mHistory"></div>
+      </div>
+
+      <div class="panel" style="grid-column:1/-1">
+        <h3>My Saved Meals</h3>
+        <div id="mealList"><div class="empty">No saved meals yet.</div></div>
+        <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:16px">
+          <div class="field-lbl">Create a meal</div>
+          <input class="input" id="mealName" placeholder="Meal name (e.g. Breakfast)" style="margin-bottom:8px">
+          <div id="mealItems"></div>
+          <div class="row" style="margin-top:8px;gap:8px">
+            <button class="btn ghost sm" id="mealAddItem">＋ Add item</button>
+            <button class="btn primary sm" id="mealSave">Save meal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="grid-column:1/-1" id="exportPanel">
+        <h3>Your data</h3>
+        <div style="font-size:13px;color:var(--muted);margin:-2px 0 12px">Download your data — handy for a dietitian or your own records.</div>
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <button class="btn ghost" id="exportLog">⬇︎ Protein log (CSV)</button>
+          <button class="btn ghost" id="exportBody">⬇︎ Measurements (CSV)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SUBSCRIBE (trial ended / no access) ============ -->
+<div id="subscribe" style="display:none">
+  <header class="nav">
+    <div class="wrap nav-in">
+      <div class="brand"><span class="logo">P</span> Diet Tracker</div>
+      <button class="btn ghost sm" id="subSignOut">Sign out</button>
+    </div>
+  </header>
+  <div class="wrap" style="max-width:520px;padding:64px 22px">
+    <div class="panel" style="text-align:center;padding:34px">
+      <div class="logo" style="width:54px;height:54px;font-size:26px;margin:0 auto 18px"></div>
+      <h2 style="margin:0 0 10px;font-size:26px;letter-spacing:-.4px" id="subTitle">Your free trial has ended</h2>
+      <p style="color:var(--ink-2);font-size:17px;margin:0 0 6px" id="subMsg">Keep tracking your protein and stay on your streak.</p>
+      <div style="font-size:34px;font-weight:850;letter-spacing:-.6px;margin:16px 0 2px" id="subPrice">S$2.99<span style="font-size:16px;color:var(--muted);font-weight:600">/month</span></div>
+      <div class="seg" id="subCurSeg" style="display:none;justify-content:center;margin:0 0 8px"></div>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 22px">Cancel anytime — or ask your gym to add you to a package.</p>
+      <button class="btn primary lg" id="subscribeBtn" style="width:100%">Subscribe &amp; continue</button>
+      <div id="subErr" style="color:var(--danger);font-size:14px;margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, deleteDoc, setDoc, onSnapshot, getDoc, getDocs,
+  query, where, orderBy, serverTimestamp, Timestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFunctions, httpsCallable }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
+const firebaseConfig = {
+  apiKey: "PLACEHOLDER_NEW_FIREBASE_API_KEY",
+  // authDomain matches the domain this site is actually served from (web.app),
+  // so the whole auth flow — handler page AND session storage — stays SAME-ORIGIN.
+  // That avoids the hidden cross-domain iframe (firebaseapp.com) that mobile
+  // browsers block via third-party-storage restrictions, which was dropping the
+  // session on phones and bouncing users back to the homepage after sign-in.
+  // Requires web.app/__/auth/handler to be registered in the Google OAuth client
+  // (done) so there's no redirect_uri_mismatch.
+  authDomain: "PLACEHOLDER_PROJECT.web.app",
+  projectId: "PLACEHOLDER_PROJECT",
+  storageBucket: "PLACEHOLDER_PROJECT.firebasestorage.app",
+  messagingSenderId: "PLACEHOLDER_SENDER_ID",
+  appId: "PLACEHOLDER_APP_ID",
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const fns = getFunctions(app, "asia-southeast1");    // billing / self-pay / trial
+const fnsUS = getFunctions(app);                      // us-central1: recognizeFood (photo AI)
+const provider = new GoogleAuthProvider();
+const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent)
+  || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+
+const $ = id => document.getElementById(id);
+function toast(msg, ok=true){
+  const t=$("toast"); t.style.background=ok?"#0a8f63":"#b3352f"; t.textContent=msg;
+  t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",3500);
+}
+function show(view){
+  $("boot").style.display = view==="boot"?"grid":"none";
+  $("landing").style.display = view==="landing"?"block":"none";
+  $("app").style.display = view==="app"?"block":"none";
+  $("subscribe").style.display = view==="subscribe"?"block":"none";
+}
+
+// ---- auth ----
+function signInError(e){
+  const c=e.code||"";
+  if(c.includes("popup-blocked")) toast("Please allow pop-ups to sign in.",false);
+  else if(c.includes("unauthorized-domain")) toast("This site's domain isn't authorised in Firebase yet.",false);
+  else if(!c.includes("popup-closed")&&!c.includes("cancelled")) toast("Sign-in failed: "+(e.message||c),false);
+}
+async function doSignIn(){
+  // Same-origin auth (authDomain = web.app = this site) means the credential is
+  // stored on THIS origin, so nothing gets lost across domains. On mobile we use
+  // a full-page redirect — popups are unreliable on phones and blocked outright
+  // in in-app browsers (WhatsApp/Instagram) — and because it's same-origin the
+  // session survives the round-trip. On desktop a popup keeps you on the page.
+  try {
+    if(isMobile){ await signInWithRedirect(auth, provider); return; }
+    await signInWithPopup(auth, provider);
+  } catch(e){
+    const c=e.code||"";
+    if(c.includes("popup-blocked")||c.includes("operation-not-supported")||c.includes("web-storage-unsupported")||c.includes("cancelled-popup-request")){
+      try { await signInWithRedirect(auth, provider); } catch(e2){ signInError(e2); }
+    } else if(!c.includes("popup-closed")){ signInError(e); }
+  }
+}
+// Complete any redirect sign-in (the fallback path) when returning to the page.
+getRedirectResult(auth).catch(signInError);
+["navSignIn","heroStart","footSignIn"].forEach(id=>{ const el=$(id); if(el) el.addEventListener("click",doSignIn); });
+$("signOut").addEventListener("click",()=>signOut(auth));
+
+// ---- live state ----
+let uid=null, goal=0, entriesUnsub=null, weekUnsub=null, profileUnsub=null;
+let todayTotal=0, weekTotals=[];
+let pendingMacros=null; // macros from the most recent photo scan, attached to the next Add
+
+const RING_LEN=502.65;
+function startOfDay(offset=0){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+offset); return d; }
+function fmtTime(ts){ if(!ts) return ""; const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }
+
+function renderRing(){
+  const pct = goal>0 ? Math.min(todayTotal/goal,1) : 0;
+  $("ringFg").style.strokeDashoffset = RING_LEN*(1-pct);
+  $("totalG").textContent = todayTotal;
+  $("goalOf").textContent = goal>0 ? `of ${goal} g` : "grams today";
+  const gl=$("goalLine");
+  if(goal>0 && todayTotal>=goal){ gl.textContent="🎉 Goal reached — great work!"; gl.className="goal-line met"; }
+  else if(goal>0){ gl.textContent=`${goal-todayTotal} g to go`; gl.className="goal-line left"; }
+  else { gl.textContent="Set a daily goal to track your progress"; gl.className="goal-line left"; }
+}
+
+// Sum today's macros (calories/carbs/fat/sugar) from entries that carry them
+// (photo scans). Hidden entirely when nothing today has macro data.
+function renderMacros(list){
+  const sum=k=>list.reduce((s,e)=>s+(Number(e[k])||0),0);
+  const cal=Math.round(sum("calories")), carb=Math.round(sum("carbs")), fat=Math.round(sum("fat")), sugar=Math.round(sum("sugar"));
+  const p=$("macroPanel");
+  if(!(cal>0||carb>0||fat>0||sugar>0)){ p.style.display="none"; return; }
+  p.style.display="block";
+  $("mCal").textContent=cal; $("mCarb").textContent=carb; $("mFat").textContent=fat; $("mSugar").textContent=sugar;
+}
+
+function renderEntries(list){
+  const box=$("entries");
+  if(!list.length){ box.innerHTML=`<div class="empty">No food logged yet today.<br>Add your first meal above 👆</div>`; return; }
+  box.innerHTML="";
+  list.forEach(e=>{
+    const row=document.createElement("div"); row.className="entry";
+    row.innerHTML=`<div><div class="nm"></div><div class="tm">${fmtTime(e.timestamp)}</div></div>
+      <div class="gr">${e.grams} g</div>
+      <button class="icon-btn ent-star" title="Save as favourite" style="color:#eab308">☆</button>
+      <button class="icon-btn ent-del" title="Delete">🗑</button>`;
+    row.querySelector(".nm").textContent=e.foodName||"Food";
+    row.querySelector(".ent-star").addEventListener("click",()=>saveFavorite(e.foodName,e.grams));
+    row.querySelector(".ent-del").addEventListener("click",async()=>{
+      try{ await deleteDoc(doc(db,"users",uid,"entries",e.id)); }
+      catch(err){ toast("Couldn't delete: "+(err.message||err),false); }
+    });
+    box.appendChild(row);
+  });
+}
+
+function renderWeek(){
+  // weekTotals: array of {label, total} oldest→today (7)
+  const max=Math.max(goal||0, ...weekTotals.map(d=>d.total), 1);
+  const chart=$("chart"); chart.innerHTML="";
+  weekTotals.forEach(d=>{
+    const met = goal>0 && d.total>=goal;
+    const h = Math.round((d.total/max)*100);
+    const bar=document.createElement("div"); bar.className="bar";
+    bar.innerHTML=`<div class="col"><div class="fill ${met?'met':''}" style="height:100%"><i style="--h:${h}%"></i></div></div><div class="d">${d.label}</div>`;
+    bar.title=`${d.total} g`;
+    chart.appendChild(bar);
+  });
+  // stats
+  const days=weekTotals.map(d=>d.total);
+  const avg = days.length? Math.round(days.reduce((a,b)=>a+b,0)/days.length):0;
+  const hit = goal>0 ? days.filter(g=>g>=goal).length : 0;
+  // current streak ending today (today counts as in-progress)
+  let streak=0;
+  for(let i=days.length-1;i>=0;i--){
+    if(i===days.length-1 && goal>0 && days[i]<goal) continue; // today not yet hit — don't break
+    if(goal>0 && days[i]>=goal) streak++; else break;
+  }
+  $("stAvg").textContent=avg;
+  $("stHit").textContent = `${hit}/7`;
+  $("stStreak").textContent = goal>0?streak:0;
+}
+
+function listenAll(){
+  // today's entries (live)
+  const entCol=collection(db,"users",uid,"entries");
+  const todayQ=query(entCol, where("timestamp",">=",Timestamp.fromDate(startOfDay())), orderBy("timestamp","desc"));
+  entriesUnsub=onSnapshot(todayQ, snap=>{
+    const list=snap.docs.map(d=>({id:d.id, ...d.data()}));
+    todayTotal=list.reduce((s,e)=>s+(Number(e.grams)||0),0);
+    todayEntries=list;
+    renderEntries(list); renderRing(); renderMacros(list); renderMealTargets();
+    // today is the last bucket in the week chart
+    if(weekTotals.length){ weekTotals[weekTotals.length-1].total=todayTotal; renderWeek(); }
+  },err=>toast("Live sync error: "+err.message,false));
+
+  // last 7 days for the chart
+  const weekQ=query(entCol, where("timestamp",">=",Timestamp.fromDate(startOfDay(-6))));
+  weekUnsub=onSnapshot(weekQ, snap=>{
+    const buckets={};
+    for(let i=6;i>=0;i--){ const d=startOfDay(-i); buckets[d.toDateString()]=0; }
+    snap.docs.forEach(dd=>{
+      const e=dd.data(); const ts=e.timestamp&&e.timestamp.toDate?e.timestamp.toDate():null;
+      if(!ts) return; const k=new Date(ts); k.setHours(0,0,0,0);
+      if(buckets[k.toDateString()]!==undefined) buckets[k.toDateString()]+=Number(e.grams)||0;
+    });
+    weekTotals=Object.keys(buckets).map(k=>({ label:new Date(k).toLocaleDateString([], {weekday:"short"}).slice(0,2), total:buckets[k] }));
+    if(weekTotals.length) weekTotals[weekTotals.length-1].total=todayTotal; // keep today live
+    renderWeek();
+  });
+
+  // profile → goal (live, stays in sync with the app's custom goal)
+  profileUnsub=onSnapshot(doc(db,"users",uid,"profile","main"), snap=>{
+    const p=snap.exists()?snap.data():{};
+    goal = computeGoal(p);
+    if(document.activeElement!==$("goalInput")) $("goalInput").value = goal||"";
+    populateProfileForm(p);
+    renderRing(); renderWeek(); renderMealTargets();
+  });
+
+  // meal-time boundaries → per-meal targets (survives reinstall, syncs with app)
+  mealTimesUnsub=onSnapshot(doc(db,"users",uid,"profile","mealTimes"), snap=>{
+    if(snap.exists()){ const d=snap.data();
+      if(Number.isFinite(d.lunchStartMin)) mealTimes.lunch=d.lunchStartMin;
+      if(Number.isFinite(d.dinnerStartMin)) mealTimes.dinner=d.dinnerStartMin;
+    }
+    renderMealTargets();
+    if($("mealTimesEditor") && $("mealTimesEditor").style.display!=="none") setMealTimeInputs();
+  }, ()=>{});
+
+  // cuisine preferences (drives Suggest foods)
+  loadCuisineProfile();
+
+  startHealth();
+}
+
+// Mirror the app exactly: use the saved custom goal if set, otherwise weight ×
+// an age/goal factor (the SAME numbers as the iOS/Android ProteinCalculator:
+// build muscle 1.7, lose fat 1.6, maintain 1.1 if 50+, else 0.9 g per kg).
+function computeGoal(p){
+  if(p && p.customDailyGoalGrams!=null && Number(p.customDailyGoalGrams)>0) return Math.round(Number(p.customDailyGoalGrams));
+  const w=profileWeightKg(p);
+  if(w>0){
+    const g=String((p&&p.fitnessGoal)||"MAINTAIN");
+    const age=profileAge(p);
+    const perKg = g==="BUILD_MUSCLE" ? 1.7
+      : g==="LOSE_FAT" ? 1.6
+      : (age>=50 ? 1.1 : 0.9);
+    return Math.round(w*perKg);
+  }
+  return 0;
+}
+// Weight in kg from the app's schema (weightValue + weightUnit), with a legacy
+// weightKg fallback for any older docs.
+function profileWeightKg(p){
+  if(!p) return 0;
+  const v=Number(p.weightValue);
+  if(v>0) return String(p.weightUnit)==="LB" ? v*0.453592 : v;
+  return Number(p.weightKg)||0;
+}
+function profileAge(p){
+  const by=Number(p&&p.birthYear)||1970;   // app's default when the field is unset
+  return (new Date().getFullYear()) - by;
+}
+
+// ===== "Tell us about you" profile form (mirrors the app's ProfileSetupScreen) =====
+let pfSex="MALE", pfGoal="MAINTAIN", pfLoaded=false;
+const PF_SEXES=[["MALE","Male"],["FEMALE","Female"]];
+const PF_GOALS=[["BUILD_MUSCLE","Build muscle"],["LOSE_FAT","Lose fat"],["MAINTAIN","Maintain"]];
+
+function buildSeg(elId, options, current, onPick){
+  const seg=$(elId); if(!seg) return; seg.innerHTML="";
+  options.forEach(([val,label])=>{
+    const b=document.createElement("button");
+    b.textContent=label;
+    if(val===current) b.className="on";
+    b.addEventListener("click",()=>onPick(val));
+    seg.appendChild(b);
+  });
+}
+function buildPfSegs(){
+  buildSeg("pfSexSeg", PF_SEXES, pfSex, v=>{ pfSex=v; buildPfSegs(); });
+  buildSeg("pfGoalSeg", PF_GOALS, pfGoal, v=>{ pfGoal=v; buildPfSegs(); updatePfCalc(); });
+}
+// Live preview of the calculated target (ignores any custom-goal override) so the
+// number visibly changes as the user edits weight / birth year / goal.
+function updatePfCalc(){
+  const el=$("pfCalc"); if(!el) return;
+  const w=parseFloat($("pfWeight").value);
+  const by=parseInt($("pfBirthYear").value,10);
+  if(!(w>0) || !(by>1900)){ el.textContent="Enter your weight and birth year to see your target."; return; }
+  const target=computeGoal({ weightValue:w, weightUnit:"KG", birthYear:by, fitnessGoal:pfGoal });
+  el.textContent=`Calculated target: ${target} g/day · based on your weight, age and goal`;
+}
+// Fill the form from the saved profile once per session (so live sync doesn't
+// overwrite what the user is typing).
+function populateProfileForm(p){
+  if(pfLoaded) return;
+  if(p){
+    if(p.name) $("pfName").value=p.name;
+    if(Number(p.birthYear)>1900) $("pfBirthYear").value=Number(p.birthYear);
+    const w=profileWeightKg(p); if(w>0) $("pfWeight").value=Math.round(w*10)/10;
+    if(p.sex==="MALE"||p.sex==="FEMALE") pfSex=p.sex;
+    const g=String(p.fitnessGoal||""); if(g==="BUILD_MUSCLE"||g==="LOSE_FAT"||g==="MAINTAIN") pfGoal=g;
+  }
+  buildPfSegs(); updatePfCalc(); pfLoaded=true;
+}
+async function savePf(){
+  const name=($("pfName").value||"").trim();
+  const by=parseInt($("pfBirthYear").value,10);
+  const w=parseFloat($("pfWeight").value);
+  if(!name){ toast("Enter your name.",false); return; }
+  if(!(by>1900 && by<=new Date().getFullYear())){ toast("Enter a valid birth year.",false); return; }
+  if(!(w>0)){ toast("Enter your weight in kg.",false); return; }
+  try{
+    await setDoc(doc(db,"users",uid,"profile","main"),
+      { name, sex:pfSex, birthYear:by, weightValue:w, weightUnit:"KG", fitnessGoal:pfGoal },
+      { merge:true });
+    toast("Saved — synced to your app too.");
+  }catch(err){ toast("Couldn't save your details: "+(err.message||err),false); }
+}
+$("pfSave") && $("pfSave").addEventListener("click", savePf);
+$("pfWeight") && $("pfWeight").addEventListener("input", updatePfCalc);
+$("pfBirthYear") && $("pfBirthYear").addEventListener("input", updatePfCalc);
+buildPfSegs();
+
+function stopAll(){ [entriesUnsub,weekUnsub,profileUnsub,mealTimesUnsub].forEach(u=>u&&u()); entriesUnsub=weekUnsub=profileUnsub=mealTimesUnsub=null; todayTotal=0; weekTotals=[]; todayEntries=[]; cuisineProfile=null; pfLoaded=false; stopBarcode(); stopHealth(); }
+
+// ---- actions ----
+async function addFood(name, grams){
+  name=(name||"").trim(); grams=Math.round(Number(grams));
+  if(!name){ toast("Enter a food name.",false); return; }
+  if(!(grams>0)){ toast("Enter the protein in grams.",false); return; }
+  const entry={ foodName:name, grams:grams, timestamp:serverTimestamp() };
+  // Attach macros from the most recent photo scan, if this Add follows one.
+  if(pendingMacros){
+    if(pendingMacros.calories>0) entry.calories=pendingMacros.calories;
+    if(pendingMacros.carbs>0) entry.carbs=pendingMacros.carbs;
+    if(pendingMacros.fat>0) entry.fat=pendingMacros.fat;
+    if(pendingMacros.sugar>0) entry.sugar=pendingMacros.sugar;
+  }
+  try{
+    await addDoc(collection(db,"users",uid,"entries"), entry);
+    pendingMacros=null;
+    $("foodName").value=""; $("foodGrams").value=""; $("foodName").focus();
+  }catch(err){ toast("Couldn't add: "+(err.message||err),false); }
+}
+$("addFood").addEventListener("click",()=>addFood($("foodName").value,$("foodGrams").value));
+$("foodGrams").addEventListener("keydown",e=>{ if(e.key==="Enter") addFood($("foodName").value,$("foodGrams").value); });
+// Typing a food name by hand means it's not the scanned item — drop stale macros.
+$("foodName").addEventListener("input",()=>{ pendingMacros=null; });
+// Quick-add chips are populated from live favourites (see renderFavorites).
+
+// ---- photo + AI food recognition (calls recognizeFood in us-central1) ----
+$("photoBtn").addEventListener("click",()=>$("foodPhoto").click());
+$("foodPhoto").addEventListener("change",async e=>{
+  const file=e.target.files && e.target.files[0]; e.target.value="";   // reset so same file can be re-picked
+  if(file) await recognizePhoto(file);
+});
+// Downscale to max 1024px and return base64 JPEG (no data: prefix) — matches the app.
+async function fileToBase64Jpeg(file, maxDim, quality){
+  const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error("read failed")); r.readAsDataURL(file); });
+  const img=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>rej(new Error("not an image")); im.src=dataUrl; });
+  let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+  const scale=Math.min(1, maxDim/Math.max(w,h)); w=Math.round(w*scale); h=Math.round(h*scale);
+  const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+  canvas.getContext("2d").drawImage(img,0,0,w,h);
+  return canvas.toDataURL("image/jpeg", quality).split(",")[1];
+}
+async function recognizePhoto(file){
+  const btn=$("photoBtn"); const orig=btn.innerHTML; const hint=$("aiHint");
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Reading your photo…'; hint.style.display="none";
+  try{
+    const imageBase64=await fileToBase64Jpeg(file, 1024, 0.9);
+    const res=await httpsCallable(fnsUS,"recognizeFood")({ imageBase64, highDetail:false });
+    const d=res.data||{};
+    const name=(d.foodName||"").trim();
+    const grams=Math.round(Number(d.estimatedProteinGrams)||0);
+    if(!name){ hint.textContent="Couldn't identify the food — try another photo, or type it in below."; hint.style.display="block"; return; }
+    $("foodName").value=name; $("foodGrams").value=grams>0?grams:"";
+    // Hold the macros from this scan so they're saved with the entry when Add is tapped.
+    pendingMacros={
+      calories:Math.round(Number(d.estimatedCalories)||0),
+      carbs:Math.round(Number(d.estimatedCarbsGrams)||0),
+      fat:Math.round(Number(d.estimatedFatGrams)||0),
+      sugar:Math.round(Number(d.estimatedSugarGrams)||0),
+    };
+    const conf=d.confidence?` · ${d.confidence} confidence`:"";
+    const extra=d.notes?` ${d.notes}` : "";
+    const macroBits=[];
+    if(pendingMacros.calories>0) macroBits.push(`~${pendingMacros.calories} kcal`);
+    if(pendingMacros.carbs>0) macroBits.push(`${pendingMacros.carbs}g carbs`);
+    if(pendingMacros.fat>0) macroBits.push(`${pendingMacros.fat}g fat`);
+    if(pendingMacros.sugar>0) macroBits.push(`${pendingMacros.sugar}g sugar`);
+    const macroLine=macroBits.length?` (${macroBits.join(" · ")})`:"";
+    hint.textContent=`AI: ${name} — about ${grams} g protein${macroLine}${conf}. Check it and tap Add.${extra}`;
+    hint.style.display="block";
+    $("foodGrams").focus(); $("foodGrams").select && $("foodGrams").select();
+  }catch(e){
+    const c=e.code||"";
+    if(c.includes("unauthenticated")) toast("Please sign in again to use photo recognition.",false);
+    else toast("Couldn't recognise the photo: "+(e.message||e),false);
+  }finally{ btn.disabled=false; btn.innerHTML=orig; }
+}
+$("saveGoal").addEventListener("click",async()=>{
+  const v=Math.round(Number($("goalInput").value));
+  if(!(v>0)){ toast("Enter a goal above 0.",false); return; }
+  try{
+    await setDoc(doc(db,"users",uid,"profile","main"), { customDailyGoalGrams:v }, { merge:true });
+    toast("Goal saved — synced to your app too.");
+  }catch(err){ toast("Couldn't save goal: "+(err.message||err),false); }
+});
+
+// ================= HEALTH & PROGRESS (weight, measurements, meals, favourites, water) =================
+const WATER_GOAL=8;
+const MTYPES=[
+  {k:"waist",label:"Waist",unit:"cm"},
+  {k:"bodyFat",label:"Body fat",unit:"%"},
+  {k:"muscleMass",label:"Muscle mass",unit:"kg"},
+  {k:"sleep",label:"Sleep",unit:"hours"},
+  {k:"strength",label:"Strength",unit:"session"},
+];
+let mType="waist";
+let weightData=[], measData=[], mealsData=[], favData=[], waterGlasses=0;
+let weightUnsub=null, measUnsub=null, mealsUnsub=null, favUnsub=null, waterUnsub=null;
+
+function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function fmtDate(ts){ if(!ts) return "—"; const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString([], {month:"short",day:"numeric"}); }
+
+// ---- water ----
+function renderWater(){
+  $("waterCount").textContent=`${waterGlasses} of ${WATER_GOAL} glasses${waterGlasses>=WATER_GOAL?" · done 🎉":""}`;
+  const dots=$("waterDots"); dots.innerHTML="";
+  const n=Math.max(WATER_GOAL,waterGlasses);
+  for(let i=0;i<n;i++){ const s=document.createElement("i"); if(i<waterGlasses)s.className="on"; dots.appendChild(s); }
+}
+async function setWater(n){ n=Math.max(0,n); try{ await setDoc(doc(db,"users",uid,"water",todayKey()),{glasses:n},{merge:true}); }catch(e){ toast("Couldn't update water: "+(e.message||e),false);} }
+$("waterPlus").addEventListener("click",()=>setWater(waterGlasses+1));
+$("waterMinus").addEventListener("click",()=>setWater(waterGlasses-1));
+
+// ---- weight ----
+function renderWeight(){
+  const svg=$("weightChart"); const pts=weightData.filter(w=>Number(w.weightKg)>0);
+  if(!pts.length){ svg.innerHTML=`<text x="160" y="80" text-anchor="middle" fill="#8a988f" font-size="12">Log your weight to see the trend</text>`; $("weightLatest").textContent=""; return; }
+  const vals=pts.map(p=>Number(p.weightKg)); const min=Math.min(...vals), max=Math.max(...vals); const pad=(max-min)*0.15||1;
+  const lo=min-pad, hi=max+pad; const W=320,H=150,mx=10,my=16;
+  const x=i=> mx + (pts.length===1 ? (W-2*mx)/2 : (i/(pts.length-1))*(W-2*mx));
+  const y=v=> H-my - ((v-lo)/(hi-lo))*(H-2*my);
+  const d=pts.map((p,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(Number(p.weightKg)).toFixed(1)}`).join(" ");
+  const dots=pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(Number(p.weightKg)).toFixed(1)}" r="3" fill="#0a8f63"/>`).join("");
+  svg.innerHTML=`<path d="${d}" fill="none" stroke="#12b981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+  const latest=pts[pts.length-1]; $("weightLatest").textContent=`Latest: ${Number(latest.weightKg)} kg · ${pts.length} entr${pts.length===1?"y":"ies"}`;
+}
+async function addWeight(){ const v=parseFloat($("weightIn").value); if(!(v>0)){toast("Enter a weight in kg.",false);return;} try{ await addDoc(collection(db,"users",uid,"weightLog"),{weightKg:v,timestamp:serverTimestamp()}); $("weightIn").value=""; }catch(e){toast("Couldn't log weight: "+(e.message||e),false);} }
+$("addWeight").addEventListener("click",addWeight);
+$("weightIn").addEventListener("keydown",e=>{if(e.key==="Enter")addWeight();});
+
+// ---- measurements ----
+function curMType(){ return MTYPES.find(t=>t.k===mType)||MTYPES[0]; }
+function buildMSeg(){ const seg=$("mSeg"); seg.innerHTML=""; MTYPES.forEach(t=>{ const b=document.createElement("button"); b.textContent=t.label; if(t.k===mType)b.className="on"; b.addEventListener("click",()=>{mType=t.k;buildMSeg();updateMAddRow();renderMeasurements();}); seg.appendChild(b); }); }
+function updateMAddRow(){
+  const t=curMType(); const strength=t.k==="strength";
+  $("mAddRow").style.display=strength?"none":"flex";
+  $("mLbl").textContent=`${t.label} (${t.unit})`;
+  let sb=$("mStrengthBtn");
+  if(strength){
+    if(!sb){ sb=document.createElement("button"); sb.id="mStrengthBtn"; sb.className="btn primary"; sb.style.marginBottom="8px"; sb.textContent="Log a strength session"; sb.addEventListener("click",()=>addMeasurement(1)); $("mAddRow").insertAdjacentElement("afterend",sb); }
+    sb.style.display="block";
+  } else if(sb){ sb.style.display="none"; }
+}
+function renderMeasurements(){
+  const t=curMType(); const list=measData.filter(m=>m.type===mType).slice().reverse();
+  const box=$("mHistory");
+  if(!list.length){ box.innerHTML=`<div class="empty" style="padding:14px 0">No ${t.label.toLowerCase()} entries yet.</div>`; return; }
+  box.innerHTML="";
+  list.forEach(m=>{
+    const row=document.createElement("div"); row.className="mrow";
+    const val = m.type==="strength" ? "1 session" : `${(+m.value)} ${t.unit}`;
+    row.innerHTML=`<span class="d">${fmtDate(m.timestamp)}</span><span class="v">${val}</span><button class="icon-btn" title="Delete">🗑</button>`;
+    row.querySelector(".icon-btn").addEventListener("click",async()=>{ try{ await deleteDoc(doc(db,"users",uid,"measurements",m.id)); }catch(e){toast("Couldn't delete: "+(e.message||e),false);} });
+    box.appendChild(row);
+  });
+}
+async function addMeasurement(fixed){
+  const t=curMType();
+  const v = fixed!=null ? fixed : parseFloat($("mIn").value);
+  if(!(v>0)){ toast(`Enter a ${t.label.toLowerCase()} value.`,false); return; }
+  try{ await addDoc(collection(db,"users",uid,"measurements"),{type:mType,value:v,timestamp:serverTimestamp()}); if(fixed==null)$("mIn").value=""; }
+  catch(e){ toast("Couldn't save: "+(e.message||e),false); }
+}
+$("mAdd").addEventListener("click",()=>addMeasurement());
+$("mIn").addEventListener("keydown",e=>{if(e.key==="Enter")addMeasurement();});
+
+// ---- meals ----
+function renderMeals(){
+  const box=$("mealList");
+  if(!mealsData.length){ box.innerHTML=`<div class="empty" style="padding:6px 0 2px">No saved meals yet — create one below.</div>`; return; }
+  box.innerHTML="";
+  mealsData.forEach(m=>{
+    const items=(m.items||[]); const total=items.reduce((s,i)=>s+(Number(i.grams)||0),0);
+    const card=document.createElement("div"); card.className="meal-card";
+    card.innerHTML=`<div class="meal-top"><span class="nm"></span><span class="tot">${total} g</span></div>
+      <div class="meal-items"></div>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="btn primary sm" data-log>Log this meal</button>
+        <button class="btn ghost sm" data-del style="color:var(--danger)">Delete</button>
+      </div>`;
+    card.querySelector(".nm").textContent=m.name||"Meal";
+    card.querySelector(".meal-items").textContent=items.length?items.map(i=>`${i.foodName} ${i.grams}g`).join(" · "):"No items";
+    card.querySelector("[data-log]").addEventListener("click",()=>logMeal(m));
+    card.querySelector("[data-del]").addEventListener("click",async()=>{ try{ await deleteDoc(doc(db,"users",uid,"meals",m.id)); }catch(e){toast("Couldn't delete: "+(e.message||e),false);} });
+    box.appendChild(card);
+  });
+}
+async function logMeal(m){
+  const items=(m.items||[]).filter(i=>i.foodName&&Number(i.grams)>0);
+  if(!items.length){ toast("This meal has no items.",false); return; }
+  try{ for(const i of items){ await addDoc(collection(db,"users",uid,"entries"),{foodName:i.foodName,grams:Math.round(Number(i.grams)),timestamp:serverTimestamp()}); }
+    toast(`Logged ${m.name||"meal"} · ${items.reduce((s,i)=>s+Number(i.grams),0)} g`);
+  }catch(e){ toast("Couldn't log meal: "+(e.message||e),false); }
+}
+function addMealItemRow(food,grams){
+  const wrap=$("mealItems"); const row=document.createElement("div"); row.className="row"; row.style.marginBottom="6px";
+  row.innerHTML=`<input class="input mi-food" placeholder="Food" style="flex:1">
+    <input class="input mi-g" type="number" min="1" placeholder="g" style="width:82px" inputmode="numeric">
+    <button class="icon-btn mi-rm" title="Remove">✕</button>`;
+  row.querySelector(".mi-food").value=food||""; row.querySelector(".mi-g").value=grams||"";
+  row.querySelector(".mi-rm").addEventListener("click",()=>row.remove());
+  wrap.appendChild(row);
+}
+$("mealAddItem").addEventListener("click",()=>addMealItemRow());
+$("mealSave").addEventListener("click",async()=>{
+  const name=$("mealName").value.trim();
+  const items=[...$("mealItems").querySelectorAll(".row")].map(r=>({foodName:(r.querySelector(".mi-food").value||"").trim(),grams:Math.round(Number(r.querySelector(".mi-g").value))})).filter(i=>i.foodName&&i.grams>0);
+  if(!name){ toast("Give the meal a name.",false); return; }
+  if(!items.length){ toast("Add at least one item (food + grams).",false); return; }
+  try{ await addDoc(collection(db,"users",uid,"meals"),{name,items}); $("mealName").value=""; $("mealItems").innerHTML=""; addMealItemRow(); toast("Meal saved."); }
+  catch(e){ toast("Couldn't save meal: "+(e.message||e),false); }
+});
+
+// ---- favourites (quick add) ----
+const DEFAULT_FAVS=[{foodName:"Protein shake",grams:25},{foodName:"Greek yogurt",grams:17},{foodName:"Egg",grams:6},{foodName:"Chicken breast",grams:43}];
+function renderFavorites(){
+  const box=$("quickChips"); if(!box) return; box.innerHTML="";
+  const list=favData.length?favData:DEFAULT_FAVS;
+  list.forEach(f=>{
+    const b=document.createElement("button"); b.className="chip";
+    b.textContent=`${f.foodName} · ${f.grams}g`;
+    b.addEventListener("click",()=>logFav(f.foodName,f.grams));
+    box.appendChild(b);
+  });
+}
+async function logFav(name,grams){ try{ await addDoc(collection(db,"users",uid,"entries"),{foodName:name,grams:Math.round(Number(grams)),timestamp:serverTimestamp()}); }catch(e){toast("Couldn't add: "+(e.message||e),false);} }
+async function saveFavorite(name,grams){
+  name=(name||"").trim(); grams=Math.round(Number(grams)); if(!name||!(grams>0)) return;
+  if(favData.some(f=>f.foodName===name && Number(f.grams)===grams)){ toast(`"${name}" is already a favourite.`); return; }
+  try{
+    await addDoc(collection(db,"users",uid,"favorites"),{foodName:name,grams});
+    toast(`Saved "${name}" to quick-add favourites.`);
+  }catch(e){ toast("Couldn't save favourite: "+(e.message||e),false); }
+}
+
+function startHealth(){
+  buildMSeg(); updateMAddRow();
+  if($("mealItems").children.length===0) addMealItemRow();
+  weightUnsub=onSnapshot(query(collection(db,"users",uid,"weightLog"),orderBy("timestamp","asc")), s=>{ weightData=s.docs.map(d=>({id:d.id,...d.data()})); renderWeight(); }, ()=>{});
+  measUnsub=onSnapshot(query(collection(db,"users",uid,"measurements"),orderBy("timestamp","asc")), s=>{ measData=s.docs.map(d=>({id:d.id,...d.data()})); renderMeasurements(); }, ()=>{});
+  mealsUnsub=onSnapshot(query(collection(db,"users",uid,"meals"),orderBy("name")), s=>{ mealsData=s.docs.map(d=>({id:d.id,...d.data()})); renderMeals(); }, ()=>{});
+  favUnsub=onSnapshot(query(collection(db,"users",uid,"favorites"),orderBy("foodName")), s=>{ favData=s.docs.map(d=>({id:d.id,...d.data()})); renderFavorites(); }, ()=>{});
+  waterUnsub=onSnapshot(doc(db,"users",uid,"water",todayKey()), s=>{ waterGlasses=(s.exists()?Number(s.data().glasses):0)||0; renderWater(); }, ()=>{});
+  renderWater();
+}
+function stopHealth(){
+  [weightUnsub,measUnsub,mealsUnsub,favUnsub,waterUnsub].forEach(u=>u&&u());
+  weightUnsub=measUnsub=mealsUnsub=favUnsub=waterUnsub=null;
+  weightData=[]; measData=[]; mealsData=[]; favData=[]; waterGlasses=0;
+}
+
+// ---- trial banner + subscribe ----
+function showTrialBanner(st){
+  const b=$("trialBanner");
+  if((st.status==="trial-started" || st.trial) && st.until){
+    const days=Math.max(0,Math.ceil((st.until-Date.now())/86400000));
+    $("trialText").textContent = `Free trial — ${days} day${days===1?"":"s"} left`;
+    b.style.display="flex";
+  } else { b.style.display="none"; }
+}
+// ---- currency detection + self-pay price list ----
+let selfPayOptions = [];
+let selectedCurrency = null;
+
+// DEV/TESTING ONLY -- lets ?currency=usd or ?currency=sgd in the URL force
+// which currency detectCurrency() reports, so the Stripe Checkout currency
+// flow can be tested manually without a VPN. Never linked or surfaced in the
+// UI. Only ever feeds the currency GUESS below -- loadSelfPayOptions() still
+// validates it against the real admin-configured price list before using it,
+// and createSelfPayCheckout re-validates server-side regardless, so this
+// cannot select anything that isn't a legitimate, admin-priced currency, and
+// has no effect on auth, checkout security, or account data.
+function currencyOverrideFromUrl(){
+  try{
+    const v = new URLSearchParams(window.location.search).get("currency");
+    return v && /^[a-z]{3}$/i.test(v) ? v.toLowerCase() : null;
+  }catch(e){ return null; }
+}
+
+// Best-effort locale guess from the browser (no server-side geo-IP lookup) --
+// mainly distinguishes US visitors (gym partners are US-based) from everyone
+// else. Falls back to SGD, the existing default, whenever it's unsure.
+function detectCurrency(){
+  const override = currencyOverrideFromUrl();
+  if(override) return override;
+  try{
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const lang = (navigator.language || "en-SG").toLowerCase();
+    if(tz.startsWith("America/") || lang==="en-us" || lang.endsWith("-us")) return "usd";
+    if(tz==="Asia/Singapore" || lang==="en-sg" || lang.endsWith("-sg")) return "sgd";
+  }catch(e){ /* Intl unavailable -- fall through to the default below */ }
+  return "sgd";
+}
+
+function renderSubPrice(){
+  const opt = selfPayOptions.find(o=>o.currency===selectedCurrency);
+  if(opt) $("subPrice").innerHTML = `${opt.label}<span style="font-size:16px;color:var(--muted);font-weight:600">/month</span>`;
+
+  const seg = $("subCurSeg");
+  seg.innerHTML = "";
+  if(selfPayOptions.length > 1){
+    selfPayOptions.forEach(o=>{
+      const b = document.createElement("button");
+      b.textContent = o.currency.toUpperCase();
+      if(o.currency===selectedCurrency) b.className = "on";
+      b.addEventListener("click", ()=>{ selectedCurrency = o.currency; renderSubPrice(); });
+      seg.appendChild(b);
+    });
+    seg.style.display = "flex";
+  } else {
+    seg.style.display = "none";
+  }
+}
+
+// Loads the admin-maintained price list and preselects a currency: the
+// visitor's detected currency if it's offered, else SGD, else whatever's
+// first -- same fallback order the Android app's picker uses.
+async function loadSelfPayOptions(){
+  try{
+    const res = await httpsCallable(fns,"getSelfPayOptions")({});
+    selfPayOptions = (res.data && res.data.options) || [];
+  }catch(e){ selfPayOptions = []; }
+  const detected = detectCurrency();
+  selectedCurrency = selfPayOptions.find(o=>o.currency===detected)?.currency
+    || selfPayOptions.find(o=>o.currency==="sgd")?.currency
+    || (selfPayOptions[0] && selfPayOptions[0].currency)
+    || "sgd";
+  renderSubPrice();
+}
+
+async function goSubscribe(btn){
+  const orig = btn ? btn.textContent : "";
+  const err=$("subErr"); if(err) err.textContent="";
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span> Redirecting…'; }
+  try{
+    // The trial-banner "Subscribe now" button can fire before the subscribe
+    // panel has ever loaded the price list -- load it lazily so currency
+    // detection still applies.
+    if(!selectedCurrency) await loadSelfPayOptions();
+    const res = await httpsCallable(fns,"createSelfPayCheckout")({ currency: selectedCurrency || "sgd" });
+    const url = res.data && res.data.url;
+    if(!url) throw new Error("No checkout link was returned.");
+    window.location.href = url;   // hand off to Stripe Checkout
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent=orig; }
+    const msg="Couldn't start checkout: "+(e.message||e);
+    if(err) err.textContent=msg; toast(msg,false);
+  }
+}
+$("subscribeBtn").addEventListener("click",()=>goSubscribe($("subscribeBtn")));
+$("trialSubBtn").addEventListener("click",()=>goSubscribe($("trialSubBtn")));
+$("subSignOut").addEventListener("click",()=>signOut(auth));
+
+// ---- boot ----
+// ================= PARITY FEATURES: meal targets · suggest foods · barcode · export =================
+let todayEntries=[], mealTimes={lunch:11*60,dinner:16*60}, mealTimesUnsub=null, cuisineProfile=null;
+let recCountry="SG", recCuisine="LOCAL_ASIAN";
+
+// ---- cuisine resolver (mirrors the app's CuisineResolver) ----
+function cuisineForCountry(cc){
+  const c=String(cc||"").toUpperCase();
+  if(c==="SG"||c==="MY") return "LOCAL_ASIAN";
+  if(c==="US"||c==="AU"||c==="GB"||c==="CA"||c==="NZ") return "WESTERN";
+  return "MIXED";
+}
+function browserRegion(){ const parts=(navigator.language||"").split("-"); const r=parts[1]; return r?r.toUpperCase():null; }
+function resolveCuisine(p){
+  if(p && p.preferredCuisine) return p.preferredCuisine;
+  if(p && p.userCountry) return cuisineForCountry(p.userCountry);
+  const r=(p&&p.detectedRegion)||browserRegion();
+  return r ? cuisineForCountry(r) : "MIXED";
+}
+
+// ---- meal targets (per-meal breakdown, mirrors the app dashboard) ----
+function fmtMin(min){ const h=Math.floor(min/60), m=min%60; const ap=h<12?"AM":"PM"; const dh=h===0?12:(h>12?h-12:h); return `${dh}:${String(m).padStart(2,"0")} ${ap}`; }
+function entryMinutes(e){ const ts=e.timestamp&&e.timestamp.toDate?e.timestamp.toDate():null; return ts?ts.getHours()*60+ts.getMinutes():0; }
+function renderMealTargets(){
+  const box=$("mealTargets"); if(!box) return;
+  if(!(goal>0)){ box.innerHTML='<div class="empty">Set a daily goal to see your meal targets.</div>'; return; }
+  let b=0,l=0,d=0;
+  todayEntries.forEach(e=>{ const m=entryMinutes(e), g=Number(e.grams)||0; if(m<mealTimes.lunch)b+=g; else if(m<mealTimes.dinner)l+=g; else d+=g; });
+  const base=Math.floor(goal/3), rem=goal%3;
+  const rows=[
+    {name:"Breakfast",win:`before ${fmtMin(mealTimes.lunch)}`,consumed:b,target:base+(rem>=1?1:0)},
+    {name:"Lunch",win:`${fmtMin(mealTimes.lunch)}–${fmtMin(mealTimes.dinner)}`,consumed:l,target:base+(rem>=2?1:0)},
+    {name:"Dinner",win:`after ${fmtMin(mealTimes.dinner)}`,consumed:d,target:base},
+  ];
+  box.innerHTML=rows.map(r=>{
+    const pct=r.target>0?Math.min(100,Math.round(r.consumed/r.target*100)):0;
+    const met=r.target>0&&r.consumed>=r.target;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600">
+        <span>${r.name} <span style="color:var(--muted);font-weight:500">· ${r.win}</span></span>
+        <span style="color:${met?'var(--accent-ink)':'var(--ink-2)'}">${r.consumed} / ${r.target} g</span>
+      </div>
+      <div style="height:8px;border-radius:999px;background:#e6ece9;margin-top:5px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${met?'var(--accent)':'#0891b2'};border-radius:999px"></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+function setMealTimeInputs(){
+  const p=n=>String(n).padStart(2,"0");
+  if($("lunchTime")) $("lunchTime").value=`${p(Math.floor(mealTimes.lunch/60))}:${p(mealTimes.lunch%60)}`;
+  if($("dinnerTime")) $("dinnerTime").value=`${p(Math.floor(mealTimes.dinner/60))}:${p(mealTimes.dinner%60)}`;
+}
+async function saveMealTimes(){
+  const toMin=v=>{ const a=String(v||"").split(":").map(Number); return (a[0]||0)*60+(a[1]||0); };
+  const lm=toMin($("lunchTime").value), dm=toMin($("dinnerTime").value);
+  if(!(dm>lm)){ toast("Dinner must start after lunch.",false); return; }
+  try{
+    await setDoc(doc(db,"users",uid,"profile","mealTimes"),{lunchStartMin:lm,dinnerStartMin:dm});
+    toast("Meal times saved."); $("mealTimesEditor").style.display="none";
+  }catch(e){ toast("Couldn't save meal times: "+(e.message||e),false); }
+}
+
+// ---- suggest foods (calls the same suggestFoods backend as the apps) ----
+async function loadCuisineProfile(){
+  try{ const s=await getDoc(doc(db,"users",uid)); cuisineProfile=s.exists()?s.data():{}; }catch(e){ cuisineProfile={}; }
+  return cuisineProfile;
+}
+async function suggestFoods(){
+  const btn=$("suggestBtn"), box=$("suggestList"), orig=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Thinking…';
+  try{
+    const p=cuisineProfile||await loadCuisineProfile();
+    const payload={ remainingGrams:Math.max(0,(goal||0)-todayTotal), alreadyEatenToday:todayEntries.map(e=>e.foodName).filter(Boolean), cuisinePreference:resolveCuisine(p) };
+    const country=(p&&p.userCountry)||browserRegion(); if(country) payload.userCountry=country;
+    if(p&&p.dietPreference&&p.dietPreference!=="NO_RESTRICTION") payload.dietPreference=p.dietPreference;
+    const res=await httpsCallable(fnsUS,"suggestFoods")(payload);
+    const list=(res.data&&res.data.suggestions)||[];
+    if(!list.length){ box.innerHTML='<div class="empty">No suggestions right now — try again in a moment.</div>'; return; }
+    box.innerHTML="";
+    list.forEach(s=>{
+      const name=s.foodName||"Food", g=Math.round(Number(s.proteinGrams)||0), note=s.note||"";
+      const el=document.createElement("div");
+      el.style.cssText="border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-bottom:8px";
+      el.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div style="flex:1"><div style="font-weight:650">${name}</div>${note?`<div style="font-size:12.5px;color:var(--muted);margin-top:2px">${note}</div>`:""}</div>
+        <div style="text-align:right;white-space:nowrap"><div style="font-weight:750">${g} g</div><button class="btn primary sm addSug" style="margin-top:4px">Add</button></div>
+      </div>`;
+      el.querySelector(".addSug").addEventListener("click",()=>addFood(name,g));
+      box.appendChild(el);
+    });
+  }catch(e){
+    const c=e.code||"";
+    if(c.includes("unauthenticated")) toast("Please sign in again.",false);
+    else toast("Couldn't get suggestions: "+(e.message||e),false);
+  }finally{ btn.disabled=false; btn.innerHTML=orig; }
+}
+
+// ---- food recommendations (cuisine preferences) ----
+const REC_COUNTRIES=[["SG","Singapore"],["US","United States"],["MY","Malaysia"],["AU","Australia"],["OTHER","Other"]];
+const REC_CUISINES=[["LOCAL_ASIAN","Local Asian"],["WESTERN","Western"],["VEGETARIAN","Vegetarian"],["HALAL","Halal"],["MIXED","Mixed"]];
+function buildRecSegs(){
+  buildSeg("recCountrySeg",REC_COUNTRIES,recCountry,v=>{recCountry=v;buildRecSegs();});
+  buildSeg("recCuisineSeg",REC_CUISINES,recCuisine,v=>{recCuisine=v;buildRecSegs();});
+}
+function loadRecUI(p){
+  if(p&&REC_COUNTRIES.some(c=>c[0]===p.userCountry)) recCountry=p.userCountry;
+  if(p&&REC_CUISINES.some(c=>c[0]===p.preferredCuisine)) recCuisine=p.preferredCuisine;
+  buildRecSegs();
+}
+async function saveRec(){
+  try{
+    await setDoc(doc(db,"users",uid),{ userCountry:recCountry, preferredCuisine:recCuisine, onboardingCompleted:true, detectedRegion:(cuisineProfile&&cuisineProfile.detectedRegion)||browserRegion()||null },{merge:true});
+    cuisineProfile=Object.assign({},cuisineProfile,{userCountry:recCountry,preferredCuisine:recCuisine});
+    toast("Saved — your suggestions will match this."); $("recEditor").style.display="none";
+  }catch(e){ toast("Couldn't save preferences: "+(e.message||e),false); }
+}
+
+// ---- barcode scanning (camera via html5-qrcode, with manual fallback) ----
+let bcScanner=null, bcLib=null;
+function loadBarcodeLib(){
+  if(window.Html5Qrcode) return Promise.resolve(true);
+  if(bcLib) return bcLib;
+  bcLib=new Promise(res=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js";
+    s.onload=()=>res(true); s.onerror=()=>res(false);
+    document.head.appendChild(s);
+  });
+  return bcLib;
+}
+async function startBarcode(){
+  $("barcodeBox").style.display="block";
+  const ok=await loadBarcodeLib();
+  if(!ok||!window.Html5Qrcode){ toast("Camera scanner unavailable here — type the barcode number instead.",false); return; }
+  try{
+    await stopBarcode();
+    bcScanner=new Html5Qrcode("barcodeReader");
+    await bcScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:150}},
+      text=>{ stopBarcode(); lookupBarcode(text); }, ()=>{});
+  }catch(e){ toast("Couldn't open the camera — type the barcode number instead.",false); }
+}
+async function stopBarcode(){ if(bcScanner){ try{ await bcScanner.stop(); bcScanner.clear(); }catch(e){} bcScanner=null; } }
+async function lookupBarcode(code){
+  code=String(code||"").replace(/\D/g,""); if(!code){ toast("Enter a barcode number.",false); return; }
+  toast("Looking up barcode…");
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,nutriments,serving_size`);
+    if(!r.ok){ toast("Product not found.",false); return; }
+    const j=await r.json();
+    if(j.status!==1||!j.product){ toast("That barcode isn't in the food database.",false); return; }
+    const pr=j.product, nut=pr.nutriments||{}, serving=(pr.serving_size||"").trim();
+    const name=(pr.product_name||"").trim()||"Scanned item";
+    let grams=0, note="";
+    if(typeof nut.proteins_serving==="number"){ grams=Math.round(nut.proteins_serving); note=`Protein in one serving${serving?` (${serving})`:""} from the label — adjust if you had more or less.`; }
+    else if(typeof nut.proteins_100g==="number"){ grams=Math.round(nut.proteins_100g); note="Protein per 100 g from the label — adjust for how much you had."; }
+    else { note="No protein info on the label — enter it manually."; }
+    $("foodName").value=name; $("foodGrams").value=grams>0?grams:"";
+    const hint=$("aiHint"); hint.textContent=`📦 ${name} — about ${grams} g protein. ${note}`; hint.style.display="block";
+    $("barcodeBox").style.display="none"; $("foodGrams").focus();
+  }catch(e){ toast("Couldn't look up that barcode. Check your connection and try again.",false); }
+}
+
+// ---- CSV export ----
+function csvEscape(v){ v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function fmtCsvDate(ts){ const d=ts&&ts.toDate?ts.toDate():null; if(!d) return ""; const p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function downloadCsv(filename,text){
+  const blob=new Blob([text],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function exportProteinLog(){
+  try{
+    const snap=await getDocs(query(collection(db,"users",uid,"entries"),orderBy("timestamp","desc")));
+    if(snap.empty){ toast("No entries to export yet.",false); return; }
+    let csv="Date,Food,Protein (g),Source,Shared plate\n";
+    snap.forEach(dd=>{ const e=dd.data();
+      const src=e.source?({ai:"AI estimate",barcode:"Barcode",manual:"Manual"}[e.source]||e.source):(e.estimatedByAi?"AI estimate":"Manual");
+      csv+=`${csvEscape(fmtCsvDate(e.timestamp))},${csvEscape(e.foodName)},${Number(e.grams)||0},${csvEscape(src)},${e.isSharedPlate?"Yes":"No"}\n`;
+    });
+    downloadCsv("protein_log.csv",csv); toast("Downloaded protein_log.csv");
+  }catch(e){ toast("Couldn't export: "+(e.message||e),false); }
+}
+async function exportBodyData(){
+  try{
+    const [ws,ms]=await Promise.all([ getDocs(collection(db,"users",uid,"weightLog")), getDocs(collection(db,"users",uid,"measurements")) ]);
+    const MU={waist:["Waist","cm"],bodyFat:["Body fat","%"],muscleMass:["Muscle mass","kg"],sleep:["Sleep","h"],strength:["Strength","session"]};
+    const rows=[];
+    ws.forEach(d=>{ const e=d.data(); rows.push({ts:e.timestamp,metric:"Weight",value:Number(e.weightKg)||0,unit:"kg"}); });
+    ms.forEach(d=>{ const e=d.data(); const mu=MU[e.type]||[e.type,""]; rows.push({ts:e.timestamp,metric:mu[0],value:Number(e.value)||0,unit:mu[1]}); });
+    if(!rows.length){ toast("No measurements to export yet.",false); return; }
+    rows.sort((a,b)=>{ const ta=a.ts&&a.ts.toMillis?a.ts.toMillis():Infinity, tb=b.ts&&b.ts.toMillis?b.ts.toMillis():Infinity; return tb-ta; });
+    let csv="Date,Metric,Value,Unit\n";
+    rows.forEach(r=>{ csv+=`${csvEscape(fmtCsvDate(r.ts))},${csvEscape(r.metric)},${r.value},${csvEscape(r.unit)}\n`; });
+    downloadCsv("body_data.csv",csv); toast("Downloaded body_data.csv");
+  }catch(e){ toast("Couldn't export: "+(e.message||e),false); }
+}
+
+// ---- wire up controls (elements exist in the hidden #app on load) ----
+$("suggestBtn") && $("suggestBtn").addEventListener("click",suggestFoods);
+$("recToggle") && $("recToggle").addEventListener("click",()=>{ const ed=$("recEditor"); const open=ed.style.display==="none"; ed.style.display=open?"block":"none"; if(open) loadRecUI(cuisineProfile||{}); });
+$("recSave") && $("recSave").addEventListener("click",saveRec);
+$("barcodeBtn") && $("barcodeBtn").addEventListener("click",startBarcode);
+$("barcodeClose") && $("barcodeClose").addEventListener("click",()=>{ stopBarcode(); $("barcodeBox").style.display="none"; });
+$("barcodeLookup") && $("barcodeLookup").addEventListener("click",()=>lookupBarcode($("barcodeNum").value));
+$("barcodeNum") && $("barcodeNum").addEventListener("keydown",e=>{ if(e.key==="Enter") lookupBarcode($("barcodeNum").value); });
+$("exportLog") && $("exportLog").addEventListener("click",exportProteinLog);
+$("exportBody") && $("exportBody").addEventListener("click",exportBodyData);
+$("mealTimesBtn") && $("mealTimesBtn").addEventListener("click",()=>{ const ed=$("mealTimesEditor"); const open=ed.style.display==="none"; ed.style.display=open?"block":"none"; if(open) setMealTimeInputs(); });
+$("mealTimesSave") && $("mealTimesSave").addEventListener("click",saveMealTimes);
+buildRecSegs();
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){ stopAll(); uid=null; show("landing"); return; }
+  uid=user.uid;
+  const first=(user.displayName||"").split(" ")[0];
+  $("greeting").childNodes[0].nodeValue = first?`Hi, ${first} `:"Today ";
+  $("dateLine").textContent = new Date().toLocaleDateString([], {weekday:"long",month:"long",day:"numeric"});
+  show("boot");   // spinner while we check access / grant trial
+
+  let st;
+  try { const res = await httpsCallable(fns,"startTrial")({}); st = res.data || {}; }
+  catch(e){ st = { status:"active" }; }   // fail open: try the tracker anyway
+
+  if(st.status==="lapsed"){
+    $("subTitle").textContent = "Your free trial has ended";
+    $("subMsg").textContent = "Keep tracking your protein and stay on your streak.";
+    await loadSelfPayOptions();
+    show("subscribe");
+    return;
+  }
+  show("app");
+  if(st.status==="trial-started") toast(`Your ${st.days||30}-day free trial has started 🎉`);
+  showTrialBanner(st);
+  listenAll();
+});
+</script>
+</body>
+</html>
