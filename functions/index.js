@@ -51,8 +51,12 @@ const deleteAccount = require("./deleteAccount");
 exports.deleteMyAccount = deleteAccount.deleteMyAccount;  // member callable (self-delete + data wipe)
 
 // --- Testing helper: wipe gyms/logins/enrollments back to a clean slate ---
-const resetTools = require("./resetTestData");
-exports.resetTestData = resetTools.resetTestData;         // admin callable (confirm:"RESET")
+// TODO: functions/resetTestData.js was not present in the original source
+// export (same as package.json — it never got uploaded). This is a dev-only
+// admin tool, not required for the app to work, so it's disabled here rather
+// than guessed at. Re-enable once the real file is added to functions/.
+// const resetTools = require("./resetTestData");
+// exports.resetTestData = resetTools.resetTestData;         // admin callable (confirm:"RESET")
 exports.createSelfPayCheckout = billing.createSelfPayCheckout;
 exports.getSelfPayOptions     = billing.getSelfPayOptions;   // member: currencies + prices to choose from
 exports.setSelfPayPrices      = billing.setSelfPayPrices;    // admin: edit the self-pay price list
