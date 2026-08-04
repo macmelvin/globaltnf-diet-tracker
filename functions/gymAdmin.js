@@ -21,7 +21,8 @@ if (!admin.apps.length) admin.initializeApp();
 const REGION = "asia-southeast1";
 
 // Only these accounts may create gym logins.
-const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"];
+// TODO: replace with the client's own Firebase Auth UID once their admin account exists.
+const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 
 exports.createGymOwner = onCall({ region: REGION }, async (req) => {
   if (!req.auth || !ADMIN_UIDS.includes(req.auth.uid)) {
@@ -65,7 +66,7 @@ exports.createGymOwner = onCall({ region: REGION }, async (req) => {
   // The continue URL makes the reset page show a "Continue" button back to the
   // gym portal login once they've set their password.
   const passwordSetupLink = await admin.auth().generatePasswordResetLink(email, {
-    url: "https://protein-tracker-for-50s.web.app/gym-portal.html",
+    url: "https://PLACEHOLDER_DOMAIN/gym-portal.html",
     handleCodeInApp: false,
   });
 

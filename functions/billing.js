@@ -1,5 +1,5 @@
 /**
- * ProteinTracker — Stripe billing.
+ * Diet Tracker — Stripe billing.
  * ---------------------------------------------------------------------------
  * TWO things live here, sharing one Stripe account + one webhook:
  *
@@ -70,12 +70,13 @@ function fmtMoney(amount, currency) {
 }
 const REGION = "asia-southeast1";
 const INVOICE_DUE_DAYS = 7;
-const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"];
+// TODO: replace with the client's own Firebase Auth UID once their admin account exists.
+const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 
 const SELFPAY_PRICE_ID = "price_1Tt3APHDsXq2ou3cZ8EIEsvh"; // SGD S$2.99/mo recurring price
 const SELFPAY_PRICE_SGD = 2.99;
-const SELFPAY_SUCCESS_URL = "https://protein-tracker-for-50s.web.app/subscribed.html";
-const SELFPAY_CANCEL_URL = "https://protein-tracker-for-50s.web.app/subscribed.html?canceled=1";
+const SELFPAY_SUCCESS_URL = "https://PLACEHOLDER_DOMAIN/subscribed.html";
+const SELFPAY_CANCEL_URL = "https://PLACEHOLDER_DOMAIN/subscribed.html?canceled=1";
 
 // Self-pay monthly prices per currency, editable by admin at config/selfPay.
 // Until an admin saves a list, this seeded default applies. SGD-only for now
@@ -178,7 +179,7 @@ async function invoiceGymForPeriod(sk, gymId, period) {
       invoice: invoice.id,
       currency,
       amount: amountCents,
-      description: `ProteinTracker — ${period}: ${activeCount} member${activeCount > 1 ? "s" : ""} who used the app × ${fmtMoney(price, currency)}`,
+      description: `Diet Tracker — ${period}: ${activeCount} member${activeCount > 1 ? "s" : ""} who used the app × ${fmtMoney(price, currency)}`,
       metadata: { gymId, period },
     },
     { idempotencyKey: `${idem}_item` }
@@ -323,7 +324,7 @@ exports.createSelfPayCheckout = onCall(
           currency,
           unit_amount: toMinorUnits(amount, currency),
           recurring: { interval: "month" },
-          product_data: { name: "ProteinTracker — self-pay membership" },
+          product_data: { name: "Diet Tracker — self-pay membership" },
         } };
     const meta = { uid, email: email || "", currency, price: String(amount) };
     const session = await sk.checkout.sessions.create({

@@ -26,13 +26,9 @@ if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 
 const REGION = "asia-southeast1";
-const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"]; // your admin uid
+// TODO: replace with the client's own Firebase Auth UID once their admin account exists.
+const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 const PUBLIC_GYM_ID = "Public-01"; // self-pay roster bucket; never grants access on its own
-
-// Developer / owner accounts: ALWAYS have full access, never gated by trial or
-// subscription, never billed, never shown in the self-pay panel. Add any of your
-// own test accounts here. Compared case-insensitively.
-const DEV_EMAILS = ["macmelvin.tan@gmail.com"];
 
 /** Recompute + persist memberAccess/{uid}.active for one member. Writes on change only. */
 async function computeAccess(uid) {
@@ -71,16 +67,6 @@ async function computeAccess(uid) {
   }
 
   let active = sponsored || selfPayActive;
-
-  // Developer/owner accounts always have access — never subject to trial/subscribe.
-  // Only look up the email when they'd otherwise be locked out (keeps this cheap
-  // for the common case where the member already has access).
-  if (!active && DEV_EMAILS.length) {
-    try {
-      const u = await admin.auth().getUser(uid);
-      if (u.email && DEV_EMAILS.includes(u.email.toLowerCase())) active = true;
-    } catch (e) { /* no auth account for this uid */ }
-  }
 
   const accessRef = db.doc(`memberAccess/${uid}`);
   const cur = await accessRef.get();
@@ -146,8 +132,6 @@ exports.onSelfPayWrite = onDocumentWritten(
 
 // Exposed so selfPay.js can recompute a member immediately after granting.
 exports.computeAccess = computeAccess;
-// Exposed so selfPay.startTrial can short-circuit developer accounts.
-exports.DEV_EMAILS = DEV_EMAILS;
 
 // One-time backfill — run BEFORE enabling the gating rules (and any time to
 // re-sync). Stamps memberAccess for every member. Admin only.

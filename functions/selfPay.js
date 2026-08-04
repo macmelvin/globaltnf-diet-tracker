@@ -13,12 +13,13 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
-const { computeAccess, DEV_EMAILS } = require("./accessGate");
+const { computeAccess } = require("./accessGate");
 const { queueTrialWelcomeEmail } = require("./memberEnroll");
 if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 const REGION = "asia-southeast1";
-const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"];
+// TODO: replace with the client's own Firebase Auth UID once their admin account exists.
+const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 const PUBLIC_GYM_ID = "Public-01";
 const PUBLIC_GYM_NAME = "Public-Self Paying Individual";
 const TRIAL_DAYS = 30; // free trial granted on first sign-up (web/app), once per account
@@ -87,14 +88,6 @@ exports.startTrial = onCall({ region: REGION }, async (req) => {
   const uid = req.auth.uid;
   const email = (req.auth.token && req.auth.token.email) || null;
   const nowMs = Date.now();
-
-  // Developer/owner accounts always have full access — never trial, never
-  // subscribe, never added to the self-pay panel. computeAccess grants them via
-  // the same DEV_EMAILS allowlist, so this just flips the gate on and lets them in.
-  if (email && DEV_EMAILS.includes(email.toLowerCase())) {
-    await computeAccess(uid);
-    return { status: "active", trial: false, dev: true };
-  }
 
   const spRef = db.doc(`selfPay/${uid}`);
   const spSnap = await spRef.get();

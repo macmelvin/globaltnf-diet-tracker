@@ -15,14 +15,15 @@ if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 
 const REGION = "asia-southeast1";
-const ADMIN_UIDS = ["U51HtMKGzMPObg48Ry2h4KzudBX2"];
+// TODO: replace with the client's own Firebase Auth UID once their admin account exists.
+const ADMIN_UIDS = ["PLACEHOLDER_ADMIN_UID"];
 
 // Public links (hosted on Firebase Hosting).
-const TRACKER_URL = "https://protein-tracker-for-50s.web.app/protein-tracker";
-const GUIDE_URL = "https://protein-tracker-for-50s.web.app/install";
-const INSTALL_VIDEO_URL = "https://protein-tracker-for-50s.web.app/install-ios.mp4";
-const INSTALL_POSTER_URL = "https://protein-tracker-for-50s.web.app/install-ios-poster.jpg";
-const SUPPORT_EMAIL = "proteintracker50@gmail.com";
+const TRACKER_URL = "https://PLACEHOLDER_DOMAIN/protein-tracker";
+const GUIDE_URL = "https://PLACEHOLDER_DOMAIN/install";
+const INSTALL_VIDEO_URL = "https://PLACEHOLDER_DOMAIN/install-ios.mp4";
+const INSTALL_POSTER_URL = "https://PLACEHOLDER_DOMAIN/install-ios-poster.jpg";
+const SUPPORT_EMAIL = "hello@strengthfocus.com";
 
 function escapeHtml(value) {
   return String(value || "")
@@ -37,7 +38,7 @@ function escapeHtml(value) {
 // to the `mail` collection, which the Firebase "Trigger Email from Firestore"
 // extension picks up and sends. No SMTP credentials live in this code.
 async function queueWelcomeEmail(email, gymName, memberName) {
-  const subject = "Welcome to ProteinTracker - your gym has enrolled you";
+  const subject = "Welcome to Diet Tracker - your gym has enrolled you";
   const greeting = memberName ? "Hi " + memberName + "," : "Hi,";
   const safeGreeting = escapeHtml(greeting);
   const safeGymName = escapeHtml(gymName);
@@ -45,23 +46,23 @@ async function queueWelcomeEmail(email, gymName, memberName) {
 
   const text =
     greeting + "\n\n" +
-    "Welcome to ProteinTracker!\n\n" +
-    gymName + " has enrolled you in ProteinTracker to help you track your daily protein intake and support your training goals.\n\n" +
-    "ProteinTracker works right in your phone's web browser - iPhone or Android. There's nothing to download from an app store.\n\n" +
+    "Welcome to Diet Tracker!\n\n" +
+    gymName + " has enrolled you in Diet Tracker to help you track your daily protein intake and support your training goals.\n\n" +
+    "Diet Tracker works right in your phone's web browser - iPhone or Android. There's nothing to download from an app store.\n\n" +
     "OPEN PROTEINTRACKER:\n" +
     TRACKER_URL + "\n\n" +
     "ADD IT TO YOUR HOME SCREEN (recommended)\n\n" +
-    "Adding it to your Home Screen makes ProteinTracker open like a normal app (full screen), and it's the best way to use the take-a-photo feature.\n\n" +
+    "Adding it to your Home Screen makes Diet Tracker open like a normal app (full screen), and it's the best way to use the take-a-photo feature.\n\n" +
     "Watch the short setup video: " + INSTALL_VIDEO_URL + "\n\n" +
     "Steps:\n\n" +
     "1) Open the link above in Safari (on iPhone/iPad) or Chrome (on Android).\n\n" +
     "2) Tap the Share icon (iPhone) or the menu button with three dots (Android).\n\n" +
     "3) Choose \"Add to Home Screen\".\n\n" +
-    "4) Tap the new ProteinTracker icon to open it.\n\n" +
+    "4) Tap the new Diet Tracker icon to open it.\n\n" +
     "5) Sign in using this email address: " + email + "\n\n" +
     "Tip: if you opened this email inside WhatsApp, Instagram or Facebook, first tap \"Open in browser\" (or \"Open in Chrome\") - those built-in browsers block Google sign-in.\n\n" +
     "Full setup guide (with pictures): " + GUIDE_URL + "\n\n" +
-    "Once signed in, here's how to use ProteinTracker:\n\n" +
+    "Once signed in, here's how to use Diet Tracker:\n\n" +
     "HOW TO USE PROTEINTRACKER\n\n" +
     "1) Set your goal. The first time you open the app, enter a few details (name, birth year, weight) and it works out your Daily Protein Goal. Keep it, or tap \"Set my own goal\".\n\n" +
     "2) Snap your food. On the home screen, take or upload a photo of your meal. The app looks at the photo and estimates the protein.\n\n" +
@@ -71,32 +72,32 @@ async function queueWelcomeEmail(email, gymName, memberName) {
     "Tip: try to log your meals across the day, most days - that's how you'll see your real protein habits and trends.\n\n" +
     "Need help? Contact us at " + SUPPORT_EMAIL + ".\n\n" +
     "Welcome aboard!\n\n" +
-    "The ProteinTracker Team";
+    "The Diet Tracker Team";
 
   const html =
     '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;max-width:620px;margin:0 auto;color:#17202a">' +
-      '<h2 style="font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.25;color:#2a78d6;margin:0 0 20px">Welcome to ProteinTracker</h2>' +
+      '<h2 style="font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.25;color:#2a78d6;margin:0 0 20px">Welcome to Diet Tracker</h2>' +
       '<p style="margin:16px 0 14px">' + safeGreeting + '</p>' +
-      '<p style="margin:0 0 14px"><b>Welcome to ProteinTracker!</b></p>' +
-      '<p style="margin:0 0 14px"><b>' + safeGymName + '</b> has enrolled you in ProteinTracker to help you track your daily protein intake and support your training goals.</p>' +
-      '<p style="margin:0 0 18px">ProteinTracker works right in your phone&rsquo;s <b>web browser</b> &mdash; <b>iPhone or Android</b>. There&rsquo;s nothing to download from an app store.</p>' +
-      '<p style="margin:0 0 26px"><a href="' + TRACKER_URL + '" style="font-family:Arial,Helvetica,sans-serif;font-size:17px;background:#12b981;color:#fff;text-decoration:none;padding:15px 28px;border-radius:10px;font-weight:700;display:inline-block">Open ProteinTracker &rarr;</a></p>' +
+      '<p style="margin:0 0 14px"><b>Welcome to Diet Tracker!</b></p>' +
+      '<p style="margin:0 0 14px"><b>' + safeGymName + '</b> has enrolled you in Diet Tracker to help you track your daily protein intake and support your training goals.</p>' +
+      '<p style="margin:0 0 18px">Diet Tracker works right in your phone&rsquo;s <b>web browser</b> &mdash; <b>iPhone or Android</b>. There&rsquo;s nothing to download from an app store.</p>' +
+      '<p style="margin:0 0 26px"><a href="' + TRACKER_URL + '" style="font-family:Arial,Helvetica,sans-serif;font-size:17px;background:#12b981;color:#fff;text-decoration:none;padding:15px 28px;border-radius:10px;font-weight:700;display:inline-block">Open Diet Tracker &rarr;</a></p>' +
       '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 8px;font-size:20px;line-height:1.3">&#128241; Add it to your Home Screen <span style="font-size:13px;font-weight:700;color:#0ca35a">&mdash; recommended</span></h3>' +
-      '<p style="margin:0 0 16px">This makes ProteinTracker open like a normal app (full screen) and works best with the take-a-photo feature. The short video shows exactly how &mdash; tap it to play:</p>' +
-      '<p style="margin:0 0 8px"><a href="' + INSTALL_VIDEO_URL + '" style="display:inline-block;text-decoration:none"><img src="cid:proteintracker-install-video" alt="Watch the ProteinTracker setup video" style="display:block;width:100%;max-width:230px;height:auto;border-radius:16px;border:1px solid #d8dee8"></a></p>' +
+      '<p style="margin:0 0 16px">This makes Diet Tracker open like a normal app (full screen) and works best with the take-a-photo feature. The short video shows exactly how &mdash; tap it to play:</p>' +
+      '<p style="margin:0 0 8px"><a href="' + INSTALL_VIDEO_URL + '" style="display:inline-block;text-decoration:none"><img src="cid:proteintracker-install-video" alt="Watch the Diet Tracker setup video" style="display:block;width:100%;max-width:230px;height:auto;border-radius:16px;border:1px solid #d8dee8"></a></p>' +
       '<p style="margin:0 0 20px"><a href="' + INSTALL_VIDEO_URL + '" style="color:#0a8f63;font-weight:700;text-decoration:none">&#9654; Watch the setup video</a></p>' +
       '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:24px 0 12px;font-size:20px;line-height:1.3">Steps:</h3>' +
       '<ol style="font-size:16px;line-height:1.6;color:#39434f;padding-left:24px;margin:0 0 20px">' +
         '<li style="margin-bottom:12px">Open the link above in <b>Safari</b> (iPhone/iPad) or <b>Chrome</b> (Android).</li>' +
         '<li style="margin-bottom:12px">Tap the <b>Share</b> icon (iPhone) or the <b>menu</b> button &mdash; the three dots (Android).</li>' +
         '<li style="margin-bottom:12px">Choose <b>&ldquo;Add to Home Screen&rdquo;</b>.</li>' +
-        '<li style="margin-bottom:12px">Tap the new <b>ProteinTracker</b> icon to open it.</li>' +
+        '<li style="margin-bottom:12px">Tap the new <b>Diet Tracker</b> icon to open it.</li>' +
         '<li style="margin-bottom:12px">Sign in using this email address: <b>' + safeEmail + '</b></li>' +
       '</ol>' +
       '<p style="background:#fdf3e2;border:1px solid #f0d9a8;border-radius:10px;padding:13px 16px;color:#7a531a;margin:0 0 20px;line-height:1.6">&#9888;&#65039; <b>Opening this from WhatsApp, Instagram or Facebook?</b> First tap &ldquo;Open in browser&rdquo; (or &ldquo;Open in Chrome&rdquo;) &mdash; those built-in browsers block Google sign-in.</p>' +
       '<p style="margin:18px 0 22px"><a href="' + GUIDE_URL + '" style="display:inline-block;background:#eef7f2;border:1px solid #bfe6d4;color:#0a8f63;text-decoration:none;padding:11px 18px;border-radius:8px;font-weight:600">&#128241; See the full setup guide &rarr;</a></p>' +
-      '<p style="margin:18px 0 8px">Once signed in, here&rsquo;s how to use ProteinTracker:</p>' +
-      '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 12px;font-size:20px;line-height:1.3">How to use ProteinTracker</h3>' +
+      '<p style="margin:18px 0 8px">Once signed in, here&rsquo;s how to use Diet Tracker:</p>' +
+      '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 12px;font-size:20px;line-height:1.3">How to use Diet Tracker</h3>' +
       '<ol style="font-size:16px;line-height:1.6;color:#39434f;padding-left:24px;margin:0 0 20px">' +
         '<li style="margin-bottom:12px"><b>Set your goal.</b> The first time you open the app, enter a few details (name, birth year, weight) and it works out your Daily Protein Goal. Keep it, or tap &ldquo;Set my own goal&rdquo;.</li>' +
         '<li style="margin-bottom:12px"><b>Snap your food.</b> On the home screen, take or upload a photo of your meal &mdash; the app estimates the protein for you.</li>' +
@@ -107,7 +108,7 @@ async function queueWelcomeEmail(email, gymName, memberName) {
       '<p style="background:#f0f7ee;border:1px solid #cfe6c4;border-radius:10px;padding:12px 16px;color:#3c6b2e;margin:0 0 20px">&#128161; <b>Tip:</b> try to log your meals across the day, most days &mdash; that&rsquo;s how you&rsquo;ll see your real protein habits and trends.</p>' +
       '<p style="color:#5b6672;font-size:16px;line-height:1.6">Need help? Contact us at <a href="mailto:' + SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + '</a>.</p>' +
       '<p style="margin:18px 0 4px">Welcome aboard!</p>' +
-      '<p style="color:#5b6672;font-size:16px">The ProteinTracker Team</p>' +
+      '<p style="color:#5b6672;font-size:16px">The Diet Tracker Team</p>' +
     '</div>';
 
   const attachments = [
@@ -131,29 +132,29 @@ async function queueWelcomeEmail(email, gymName, memberName) {
 // Called by selfPay.startTrial the first time a trial is granted.
 async function queueTrialWelcomeEmail(email, memberName) {
   if (!email) return;
-  const subject = "Welcome to ProteinTracker - your 30-day free trial has started";
+  const subject = "Welcome to Diet Tracker - your 30-day free trial has started";
   const greeting = memberName ? "Hi " + memberName + "," : "Hi,";
   const safeGreeting = escapeHtml(greeting);
   const safeEmail = escapeHtml(email);
 
   const text =
     greeting + "\n\n" +
-    "Welcome to ProteinTracker! Your 30-day free trial has started - you have full access to track your protein, meals, weight, water and more. No card needed.\n\n" +
-    "ProteinTracker works right in your phone's web browser - iPhone or Android. There's nothing to download from an app store.\n\n" +
+    "Welcome to Diet Tracker! Your 30-day free trial has started - you have full access to track your protein, meals, weight, water and more. No card needed.\n\n" +
+    "Diet Tracker works right in your phone's web browser - iPhone or Android. There's nothing to download from an app store.\n\n" +
     "OPEN PROTEINTRACKER:\n" +
     TRACKER_URL + "\n\n" +
     "ADD IT TO YOUR HOME SCREEN (recommended)\n\n" +
-    "Adding it to your Home Screen makes ProteinTracker open like a normal app (full screen), and it's the best way to use the take-a-photo feature.\n\n" +
+    "Adding it to your Home Screen makes Diet Tracker open like a normal app (full screen), and it's the best way to use the take-a-photo feature.\n\n" +
     "Watch the short setup video: " + INSTALL_VIDEO_URL + "\n\n" +
     "Steps:\n\n" +
     "1) Open the link above in Safari (on iPhone/iPad) or Chrome (on Android).\n\n" +
     "2) Tap the Share icon (iPhone) or the menu button with three dots (Android).\n\n" +
     "3) Choose \"Add to Home Screen\".\n\n" +
-    "4) Tap the new ProteinTracker icon to open it.\n\n" +
+    "4) Tap the new Diet Tracker icon to open it.\n\n" +
     "5) Sign in using this email address: " + email + "\n\n" +
     "Tip: if you opened this email inside WhatsApp, Instagram or Facebook, first tap \"Open in browser\" (or \"Open in Chrome\") - those built-in browsers block Google sign-in.\n\n" +
     "Full setup guide (with pictures): " + GUIDE_URL + "\n\n" +
-    "Once signed in, here's how to use ProteinTracker:\n\n" +
+    "Once signed in, here's how to use Diet Tracker:\n\n" +
     "HOW TO USE PROTEINTRACKER\n\n" +
     "1) Set your goal. The first time you open the app, enter a few details (name, birth year, weight) and it works out your Daily Protein Goal. Keep it, or tap \"Set my own goal\".\n\n" +
     "2) Snap your food. On the home screen, take or upload a photo of your meal. The app looks at the photo and estimates the protein.\n\n" +
@@ -163,32 +164,32 @@ async function queueTrialWelcomeEmail(email, memberName) {
     "Your trial runs for 30 days. Near the end we'll let you know how to keep going.\n\n" +
     "Need help? Contact us at " + SUPPORT_EMAIL + ".\n\n" +
     "Welcome aboard!\n\n" +
-    "The ProteinTracker Team";
+    "The Diet Tracker Team";
 
   const html =
     '<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;max-width:620px;margin:0 auto;color:#17202a">' +
-      '<h2 style="font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.25;color:#0a8f63;margin:0 0 20px">Welcome to ProteinTracker</h2>' +
+      '<h2 style="font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.25;color:#0a8f63;margin:0 0 20px">Welcome to Diet Tracker</h2>' +
       '<p style="margin:16px 0 14px">' + safeGreeting + '</p>' +
-      '<p style="margin:0 0 14px"><b>Welcome to ProteinTracker!</b></p>' +
+      '<p style="margin:0 0 14px"><b>Welcome to Diet Tracker!</b></p>' +
       '<p style="background:#e9f8f1;border:1px solid #bfe6d4;border-radius:10px;padding:13px 16px;color:#0a6f52;margin:0 0 16px;line-height:1.6">&#127881; <b>Your 30-day free trial has started</b> &mdash; full access to track your protein, meals, weight, water and more. No card needed.</p>' +
-      '<p style="margin:0 0 18px">ProteinTracker works right in your phone&rsquo;s <b>web browser</b> &mdash; <b>iPhone or Android</b>. There&rsquo;s nothing to download from an app store.</p>' +
-      '<p style="margin:0 0 26px"><a href="' + TRACKER_URL + '" style="font-family:Arial,Helvetica,sans-serif;font-size:17px;background:#12b981;color:#fff;text-decoration:none;padding:15px 28px;border-radius:10px;font-weight:700;display:inline-block">Open ProteinTracker &rarr;</a></p>' +
+      '<p style="margin:0 0 18px">Diet Tracker works right in your phone&rsquo;s <b>web browser</b> &mdash; <b>iPhone or Android</b>. There&rsquo;s nothing to download from an app store.</p>' +
+      '<p style="margin:0 0 26px"><a href="' + TRACKER_URL + '" style="font-family:Arial,Helvetica,sans-serif;font-size:17px;background:#12b981;color:#fff;text-decoration:none;padding:15px 28px;border-radius:10px;font-weight:700;display:inline-block">Open Diet Tracker &rarr;</a></p>' +
       '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 8px;font-size:20px;line-height:1.3">&#128241; Add it to your Home Screen <span style="font-size:13px;font-weight:700;color:#0ca35a">&mdash; recommended</span></h3>' +
-      '<p style="margin:0 0 16px">This makes ProteinTracker open like a normal app (full screen) and works best with the take-a-photo feature. The short video shows exactly how &mdash; tap it to play:</p>' +
-      '<p style="margin:0 0 8px"><a href="' + INSTALL_VIDEO_URL + '" style="display:inline-block;text-decoration:none"><img src="cid:proteintracker-install-video" alt="Watch the ProteinTracker setup video" style="display:block;width:100%;max-width:230px;height:auto;border-radius:16px;border:1px solid #d8dee8"></a></p>' +
+      '<p style="margin:0 0 16px">This makes Diet Tracker open like a normal app (full screen) and works best with the take-a-photo feature. The short video shows exactly how &mdash; tap it to play:</p>' +
+      '<p style="margin:0 0 8px"><a href="' + INSTALL_VIDEO_URL + '" style="display:inline-block;text-decoration:none"><img src="cid:proteintracker-install-video" alt="Watch the Diet Tracker setup video" style="display:block;width:100%;max-width:230px;height:auto;border-radius:16px;border:1px solid #d8dee8"></a></p>' +
       '<p style="margin:0 0 20px"><a href="' + INSTALL_VIDEO_URL + '" style="color:#0a8f63;font-weight:700;text-decoration:none">&#9654; Watch the setup video</a></p>' +
       '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:24px 0 12px;font-size:20px;line-height:1.3">Steps:</h3>' +
       '<ol style="font-size:16px;line-height:1.6;color:#39434f;padding-left:24px;margin:0 0 20px">' +
         '<li style="margin-bottom:12px">Open the link above in <b>Safari</b> (iPhone/iPad) or <b>Chrome</b> (Android).</li>' +
         '<li style="margin-bottom:12px">Tap the <b>Share</b> icon (iPhone) or the <b>menu</b> button &mdash; the three dots (Android).</li>' +
         '<li style="margin-bottom:12px">Choose <b>&ldquo;Add to Home Screen&rdquo;</b>.</li>' +
-        '<li style="margin-bottom:12px">Tap the new <b>ProteinTracker</b> icon to open it.</li>' +
+        '<li style="margin-bottom:12px">Tap the new <b>Diet Tracker</b> icon to open it.</li>' +
         '<li style="margin-bottom:12px">Sign in using this email address: <b>' + safeEmail + '</b></li>' +
       '</ol>' +
       '<p style="background:#fdf3e2;border:1px solid #f0d9a8;border-radius:10px;padding:13px 16px;color:#7a531a;margin:0 0 20px;line-height:1.6">&#9888;&#65039; <b>Opening this from WhatsApp, Instagram or Facebook?</b> First tap &ldquo;Open in browser&rdquo; (or &ldquo;Open in Chrome&rdquo;) &mdash; those built-in browsers block Google sign-in.</p>' +
       '<p style="margin:18px 0 22px"><a href="' + GUIDE_URL + '" style="display:inline-block;background:#eef7f2;border:1px solid #bfe6d4;color:#0a8f63;text-decoration:none;padding:11px 18px;border-radius:8px;font-weight:600">&#128241; See the full setup guide &rarr;</a></p>' +
-      '<p style="margin:18px 0 8px">Once signed in, here&rsquo;s how to use ProteinTracker:</p>' +
-      '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 12px;font-size:20px;line-height:1.3">How to use ProteinTracker</h3>' +
+      '<p style="margin:18px 0 8px">Once signed in, here&rsquo;s how to use Diet Tracker:</p>' +
+      '<h3 style="font-family:Arial,Helvetica,sans-serif;margin:26px 0 12px;font-size:20px;line-height:1.3">How to use Diet Tracker</h3>' +
       '<ol style="font-size:16px;line-height:1.6;color:#39434f;padding-left:24px;margin:0 0 20px">' +
         '<li style="margin-bottom:12px"><b>Set your goal.</b> The first time you open the app, enter a few details and it works out your Daily Protein Goal. Keep it, or set your own.</li>' +
         '<li style="margin-bottom:12px"><b>Snap your food.</b> On the home screen, take or upload a photo of your meal &mdash; the app estimates the protein for you.</li>' +
@@ -199,7 +200,7 @@ async function queueTrialWelcomeEmail(email, memberName) {
       '<p style="background:#f0f7ee;border:1px solid #cfe6c4;border-radius:10px;padding:12px 16px;color:#3c6b2e;margin:0 0 20px">&#128197; <b>Your trial runs for 30 days.</b> Near the end we&rsquo;ll let you know how to keep going.</p>' +
       '<p style="color:#5b6672;font-size:16px;line-height:1.6">Need help? Contact us at <a href="mailto:' + SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + '</a>.</p>' +
       '<p style="margin:18px 0 4px">Welcome aboard!</p>' +
-      '<p style="color:#5b6672;font-size:16px">The ProteinTracker Team</p>' +
+      '<p style="color:#5b6672;font-size:16px">The Diet Tracker Team</p>' +
     '</div>';
 
   const attachments = [

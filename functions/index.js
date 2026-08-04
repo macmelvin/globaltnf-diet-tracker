@@ -1,5 +1,5 @@
 /**
- * ProteinTracker — Cloud Functions entry point (all functions).
+ * Diet Tracker — Cloud Functions entry point (all functions).
  *
  * If you already have a functions/index.js, copy the three module files
  * (accessGate.js, gymAdmin.js, billing.js) into your functions/ folder and add
