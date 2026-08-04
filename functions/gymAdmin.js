@@ -34,43 +34,49 @@ exports.createGymOwner = onCall({ region: REGION }, async (req) => {
     throw new HttpsError("invalid-argument", "email and gymId are required.");
   }
 
-  // gym must exist
-  const gymSnap = await admin.firestore().doc(`gyms/${gymId}`).get();
-  if (!gymSnap.exists) {
-    throw new HttpsError("not-found", `Gym "${gymId}" was not found.`);
-  }
-
-  // create or reuse the auth user
-  let user;
   try {
-    user = await admin.auth().getUserByEmail(email);
+    // gym must exist
+    const gymSnap = await admin.firestore().doc(`gyms/${gymId}`).get();
+    if (!gymSnap.exists) {
+      throw new HttpsError("not-found", `Gym "${gymId}" was not found.`);
+    }
+
+    // create or reuse the auth user
+    let user;
+    try {
+      user = await admin.auth().getUserByEmail(email);
+    } catch (e) {
+      user = await admin.auth().createUser({ email, emailVerified: false });
+    }
+
+    // the claim the security rules check
+    await admin.auth().setCustomUserClaims(user.uid, { gymId });
+
+    // mapping doc (handy for an admin "gyms & logins" view later)
+    await admin.firestore().doc(`gymOwners/${user.uid}`).set(
+      {
+        email,
+        gymId,
+        gymName: gymSnap.data().name || gymId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // link the gym clicks to set their own password (no password sent by you).
+    // The continue URL makes the reset page show a "Continue" button back to the
+    // gym portal login once they've set their password.
+    const passwordSetupLink = await admin.auth().generatePasswordResetLink(email, {
+      url: "https://global-tnf-diet-tracker.web.app/gym-portal.html",
+      handleCodeInApp: false,
+    });
+
+    return { uid: user.uid, gymId, email, passwordSetupLink };
   } catch (e) {
-    user = await admin.auth().createUser({ email, emailVerified: false });
+    console.error("createGymOwner failed for", email, gymId, "-", e && (e.stack || e.message || e));
+    if (e instanceof HttpsError) throw e;
+    throw new HttpsError("internal", "createGymOwner failed: " + (e && e.message ? e.message : String(e)));
   }
-
-  // the claim the security rules check
-  await admin.auth().setCustomUserClaims(user.uid, { gymId });
-
-  // mapping doc (handy for an admin "gyms & logins" view later)
-  await admin.firestore().doc(`gymOwners/${user.uid}`).set(
-    {
-      email,
-      gymId,
-      gymName: gymSnap.data().name || gymId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-  // link the gym clicks to set their own password (no password sent by you).
-  // The continue URL makes the reset page show a "Continue" button back to the
-  // gym portal login once they've set their password.
-  const passwordSetupLink = await admin.auth().generatePasswordResetLink(email, {
-    url: "https://global-tnf-diet-tracker.web.app/gym-portal.html",
-    handleCodeInApp: false,
-  });
-
-  return { uid: user.uid, gymId, email, passwordSetupLink };
 });
 
 
