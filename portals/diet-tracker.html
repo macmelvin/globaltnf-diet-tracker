@@ -54,6 +54,17 @@
     radial-gradient(50% 50% at 8% 90%,rgba(8,145,178,.12),transparent 60%);pointer-events:none}
   .hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
   @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:34px}}
+
+  .gym-hook{max-width:920px;margin:0 auto;text-align:center;background:var(--accent-soft);
+    border-radius:var(--radius);padding:44px 32px}
+  .gym-hook h3{font-size:clamp(22px,2.8vw,29px);letter-spacing:-.5px;margin:14px 0 14px;color:var(--ink);font-weight:820}
+  .gym-hook > p{color:var(--ink-2);font-size:16.5px;line-height:1.6;margin:0 auto 30px;max-width:620px}
+  .gym-hook .gym-points{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;text-align:left}
+  .gym-hook .gym-points li{display:flex;align-items:flex-start;gap:12px;color:var(--ink-2);font-size:14.5px;line-height:1.5}
+  .gym-hook .gym-points .ic{width:38px;height:38px;border-radius:10px;background:#fff;color:var(--accent-ink);
+    display:grid;place-items:center;font-size:18px;flex-shrink:0;box-shadow:0 1px 2px rgba(16,27,22,.06)}
+  @media(max-width:720px){.gym-hook .gym-points{grid-template-columns:1fr}}
+
   .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent-ink);
     font-weight:700;font-size:13px;padding:6px 13px;border-radius:999px;margin-bottom:18px}
   h1{font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-1.2px;margin:0 0 16px;font-weight:850}
@@ -130,6 +141,11 @@
   .goal-line.met{color:var(--accent-ink)}
   .goal-line.left{color:var(--ink-2)}
   .row{display:flex;gap:10px}
+  @media(max-width:600px){
+    .food-manual-row{flex-wrap:wrap}
+    .food-manual-row>div:first-child{flex:1 1 100% !important;width:100% !important}
+    .food-manual-row>div:nth-child(2){flex:1 !important;width:auto !important}
+  }
   .input{width:100%;font-family:var(--font);font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fbfdfc;color:var(--ink)}
   .input:focus{outline:none;border-color:var(--accent);background:#fff}
   .field-lbl{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 5px}
@@ -164,6 +180,10 @@
   /* health & progress */
   .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
   @media(max-width:820px){.hgrid{grid-template-columns:1fr}}
+  .summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:22px}
+  @media(max-width:820px){.summary-row{grid-template-columns:1fr}}
+  html.force-mobile .summary-row{grid-template-columns:1fr}
+  .summary-row>div{min-width:0}
   .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
   .seg button{border:1px solid var(--line);background:#fbfdfc;border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
   .seg button.on{background:var(--accent-soft);border-color:#bfe8d6;color:var(--accent-ink)}
@@ -221,7 +241,7 @@
       </div>
 
       <div class="hero-photo" aria-hidden="true">
-        <img src="hero.jpg" alt="A man and woman working out together in a gym">
+        <img src="https://protein-tracker-for-50s.web.app/hero.jpg" alt="A man and woman working out together in a gym">
         <div class="hero-badge">
           <svg width="50" height="50" viewBox="0 0 104 104">
             <circle cx="52" cy="52" r="44" fill="none" stroke="#e6ece9" stroke-width="13"/>
@@ -237,6 +257,17 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="gym-hook">
+    <span class="eyebrow" style="margin-bottom:0">🏋️ Built with gyms in mind</span>
+    <h3>Retention doesn't happen at the gym. It happens on the days they don't come in.</h3>
+    <p>A gym visit happens twice a week. Diet Tracker happens every day &mdash; giving members a reason to stay engaged on the days they'd otherwise forget you exist, and giving your coaches real numbers instead of a shrug.</p>
+    <ul class="gym-points">
+      <li><span class="ic">📅</span> Daily check-ins between visits, not just twice-a-week gym time</li>
+      <li><span class="ic">💬</span> Real data for your coaches to start real conversations</li>
+      <li><span class="ic">🎯</span> A habit that keeps your gym top-of-mind on the days members would otherwise drift</li>
+    </ul>
   </div>
 
   <section class="pad" id="demo" style="padding-top:14px">
@@ -456,55 +487,25 @@
         </div>
 
         <div class="panel" id="profilePanel">
-          <h3>Tell us about you</h3>
-          <div style="font-size:13px;color:var(--muted);margin:-4px 0 12px">Used to work out your daily protein target. A goal you save above overrides this.</div>
-          <div class="field-lbl">Your name</div>
-          <input class="input" id="pfName" placeholder="Name" autocomplete="name">
-          <div class="row" style="gap:12px;margin-top:12px">
-            <div style="flex:1"><div class="field-lbl">Birth year</div><input class="input" id="pfBirthYear" type="number" min="1900" max="2100" step="1" placeholder="1970" inputmode="numeric"></div>
-            <div style="flex:1"><div class="field-lbl">Weight (kg)</div><input class="input" id="pfWeight" type="number" min="0" step="0.1" placeholder="70" inputmode="decimal"></div>
-          </div>
-          <div class="field-lbl" style="margin-top:12px">Sex</div>
-          <div class="seg" id="pfSexSeg"></div>
-          <div class="field-lbl" style="margin-top:4px">Your goal</div>
-          <div class="seg" id="pfGoalSeg"></div>
-          <div id="pfCalc" style="font-size:14px;font-weight:650;color:var(--accent-ink);background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:10px 13px;margin-top:6px"></div>
-          <button class="btn primary" id="pfSave" style="width:100%;margin-top:12px">Save details</button>
-        </div>
-
-        <div class="panel" id="macroPanel" style="display:none">
-          <h3>Today's totals</h3>
-          <div class="stat-row">
-            <div class="stat"><div class="v" id="mCal">0</div><div class="l">calories</div></div>
-            <div class="stat"><div class="v" id="mCarb">0</div><div class="l">carbs (g)</div></div>
-            <div class="stat"><div class="v" id="mFat">0</div><div class="l">fat (g)</div></div>
-            <div class="stat"><div class="v" id="mSugar">0</div><div class="l">sugar (g)</div></div>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:10px">Estimated from your photo scans.</div>
-        </div>
-
-        <div class="panel">
-          <h3>This week</h3>
-          <div class="stat-row" style="margin-bottom:16px">
-            <div class="stat"><div class="v" id="stStreak">0</div><div class="l">day streak</div></div>
-            <div class="stat"><div class="v" id="stAvg">0</div><div class="l">g/day avg</div></div>
-            <div class="stat"><div class="v" id="stHit">0/7</div><div class="l">goals hit</div></div>
-          </div>
-          <div class="chart" id="chart"></div>
-        </div>
-
-        <div class="panel" id="mealPanel">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-            <h3 style="margin:0">Meal targets</h3>
-            <button class="btn ghost sm" id="mealTimesBtn">Meal times</button>
+            <h3 style="margin:0">Tell us about you</h3>
+            <button class="btn ghost sm" id="pfEditBtn" style="display:none">Edit</button>
           </div>
-          <div id="mealTargets" style="margin-top:12px"><div class="empty">Set a daily goal to see your meal targets.</div></div>
-          <div id="mealTimesEditor" style="display:none;border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
-            <div class="row" style="gap:12px">
-              <div style="flex:1"><div class="field-lbl">Lunch starts</div><input class="input" id="lunchTime" type="time"></div>
-              <div style="flex:1"><div class="field-lbl">Dinner starts</div><input class="input" id="dinnerTime" type="time"></div>
+          <div id="pfSummary" style="display:none;margin-top:10px;font-size:14.5px;color:var(--ink-2);line-height:1.5"></div>
+          <div id="pfForm">
+            <div style="font-size:13px;color:var(--muted);margin:-4px 0 12px">Used to work out your daily protein target. A goal you save above overrides this.</div>
+            <div class="field-lbl">Your name</div>
+            <input class="input" id="pfName" placeholder="Name" autocomplete="name">
+            <div class="row" style="gap:12px;margin-top:12px">
+              <div style="flex:1"><div class="field-lbl">Birth year</div><input class="input" id="pfBirthYear" type="number" min="1900" max="2100" step="1" placeholder="1970" inputmode="numeric"></div>
+              <div style="flex:1"><div class="field-lbl">Weight (kg)</div><input class="input" id="pfWeight" type="number" min="0" step="0.1" placeholder="70" inputmode="decimal"></div>
             </div>
-            <button class="btn primary sm" id="mealTimesSave" style="margin-top:8px">Save meal times</button>
+            <div class="field-lbl" style="margin-top:12px">Sex</div>
+            <div class="seg" id="pfSexSeg"></div>
+            <div class="field-lbl" style="margin-top:4px">Your goal</div>
+            <div class="seg" id="pfGoalSeg"></div>
+            <div id="pfCalc" style="font-size:14px;font-weight:650;color:var(--accent-ink);background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:10px 13px;margin-top:6px"></div>
+            <button class="btn primary" id="pfSave" style="width:100%;margin-top:12px">Save details</button>
           </div>
         </div>
 
@@ -525,8 +526,12 @@
       <div style="display:flex;flex-direction:column;gap:22px">
         <div class="panel">
           <h3>Add food</h3>
-          <input type="file" accept="image/*" capture="environment" id="foodPhoto" style="display:none">
-          <button class="btn primary" id="photoBtn" style="width:100%">📷 Add with a photo</button>
+          <input type="file" accept="image/*" capture="environment" id="foodPhotoCamera" style="display:none">
+          <input type="file" accept="image/*" id="foodPhotoGallery" style="display:none">
+          <div class="row" style="gap:8px">
+            <button class="btn primary" id="cameraBtn" style="flex:1">📷 Take photo</button>
+            <button class="btn ghost" id="galleryBtn" style="flex:1">🖼️ Choose from gallery</button>
+          </div>
           <button class="btn ghost" id="barcodeBtn" style="width:100%;margin-top:8px">📦 Scan a barcode</button>
           <div id="barcodeBox" style="display:none;margin-top:10px">
             <div id="barcodeReader" style="width:100%;border-radius:12px;overflow:hidden"></div>
@@ -537,8 +542,23 @@
             <button class="btn ghost sm" id="barcodeClose" style="margin-top:6px">Close scanner</button>
           </div>
           <div id="aiHint" style="display:none;font-size:13.5px;color:var(--ink-2);background:var(--accent-soft);border:1px solid #cdeede;border-radius:12px;padding:10px 13px;margin-top:10px"></div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14.5px;cursor:pointer">
+            <input type="checkbox" id="sharedPlateToggle"> 🍽️ Shared plate (split between people)
+          </label>
+          <div id="sharedPlateControls" style="display:none;margin-top:10px;padding:12px;background:#fbfdfc;border:1px solid var(--line);border-radius:12px">
+            <div class="field-lbl">How many people</div>
+            <div class="row" style="gap:10px;align-items:center">
+              <button class="btn ghost sm" id="headcountMinus" type="button" style="min-width:34px">−</button>
+              <span id="headcountValue" style="font-weight:700;min-width:22px;text-align:center">2</span>
+              <button class="btn ghost sm" id="headcountPlus" type="button" style="min-width:34px">＋</button>
+            </div>
+            <div style="margin-top:12px">
+              <div class="field-lbl">Your portion: <span id="portionLabel">50%</span></div>
+              <input type="range" id="portionSlider" min="5" max="100" value="50" step="5" style="width:100%">
+            </div>
+          </div>
           <div class="field-lbl" style="text-align:center;color:var(--muted);margin:14px 0 12px">or enter it manually</div>
-          <div class="row" style="align-items:flex-end">
+          <div class="row food-manual-row" style="align-items:flex-end">
             <div style="flex:1"><div class="field-lbl">Food</div><input class="input" id="foodName" placeholder="Chicken breast" autocomplete="off"></div>
             <div style="width:120px"><div class="field-lbl">Protein (g)</div><input class="input" id="foodGrams" type="number" min="1" step="1" placeholder="30" inputmode="numeric"></div>
             <button class="btn primary" id="addFood">Add</button>
@@ -576,6 +596,44 @@
           <div class="entries" id="entries"><div class="empty">Loading…</div></div>
         </div>
       </div>
+    </div>
+
+    <div class="summary-row">
+        <div class="panel" id="macroPanel" style="display:none">
+          <h3>Today's totals</h3>
+          <div class="stat-row">
+            <div class="stat"><div class="v" id="mCal">0</div><div class="l">calories</div></div>
+            <div class="stat"><div class="v" id="mCarb">0</div><div class="l">carbs (g)</div></div>
+            <div class="stat"><div class="v" id="mFat">0</div><div class="l">fat (g)</div></div>
+            <div class="stat"><div class="v" id="mSugar">0</div><div class="l">sugar (g)</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:10px">Estimated from your photo scans.</div>
+        </div>
+
+        <div class="panel">
+          <h3>This week</h3>
+          <div class="stat-row" style="margin-bottom:16px">
+            <div class="stat"><div class="v" id="stStreak">0</div><div class="l">day streak</div></div>
+            <div class="stat"><div class="v" id="stAvg">0</div><div class="l">g/day avg</div></div>
+            <div class="stat"><div class="v" id="stHit">0/7</div><div class="l">goals hit</div></div>
+          </div>
+          <div class="chart" id="chart"></div>
+        </div>
+
+        <div class="panel" id="mealPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <h3 style="margin:0">Meal targets</h3>
+            <button class="btn ghost sm" id="mealTimesBtn">Meal times</button>
+          </div>
+          <div id="mealTargets" style="margin-top:12px"><div class="empty">Set a daily goal to see your meal targets.</div></div>
+          <div id="mealTimesEditor" style="display:none;border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+            <div class="row" style="gap:12px">
+              <div style="flex:1"><div class="field-lbl">Lunch starts</div><input class="input" id="lunchTime" type="time"></div>
+              <div style="flex:1"><div class="field-lbl">Dinner starts</div><input class="input" id="dinnerTime" type="time"></div>
+            </div>
+            <button class="btn primary sm" id="mealTimesSave" style="margin-top:8px">Save meal times</button>
+          </div>
+        </div>
     </div>
 
     <div class="hgrid">
@@ -902,6 +960,26 @@ function buildPfSegs(){
   buildSeg("pfSexSeg", PF_SEXES, pfSex, v=>{ pfSex=v; buildPfSegs(); });
   buildSeg("pfGoalSeg", PF_GOALS, pfGoal, v=>{ pfGoal=v; buildPfSegs(); updatePfCalc(); });
 }
+const PF_GOAL_LABELS={BUILD_MUSCLE:"Build muscle",LOSE_FAT:"Lose fat",MAINTAIN:"Maintain"};
+function showPfSummary(p){
+  const w=profileWeightKg(p); const age=profileAge(p);
+  const target=computeGoal(p);
+  const bits=[p.name||"", age>0?`${age} yrs`:"", w>0?`${Math.round(w*10)/10}kg`:"", PF_GOAL_LABELS[p.fitnessGoal]||""].filter(Boolean);
+  $("pfSummary").textContent = bits.join(" · ") + (target>0?` · Target ${target} g/day`:"");
+  $("pfSummary").style.display="block";
+  $("pfForm").style.display="none";
+  $("pfEditBtn").style.display="inline-flex";
+}
+function showPfForm(){
+  $("pfSummary").style.display="none";
+  $("pfForm").style.display="block";
+  $("pfEditBtn").style.display="none";
+}
+function updatePfCollapse(p){
+  const complete = p && p.name && Number(p.birthYear)>1900 && profileWeightKg(p)>0;
+  if(complete) showPfSummary(p); else showPfForm();
+}
+$("pfEditBtn") && $("pfEditBtn").addEventListener("click", showPfForm);
 // Live preview of the calculated target (ignores any custom-goal override) so the
 // number visibly changes as the user edits weight / birth year / goal.
 function updatePfCalc(){
@@ -924,6 +1002,7 @@ function populateProfileForm(p){
     const g=String(p.fitnessGoal||""); if(g==="BUILD_MUSCLE"||g==="LOSE_FAT"||g==="MAINTAIN") pfGoal=g;
   }
   buildPfSegs(); updatePfCalc(); pfLoaded=true;
+  updatePfCollapse(p||{});
 }
 async function savePf(){
   const name=($("pfName").value||"").trim();
@@ -946,12 +1025,41 @@ buildPfSegs();
 
 function stopAll(){ [entriesUnsub,weekUnsub,profileUnsub,mealTimesUnsub].forEach(u=>u&&u()); entriesUnsub=weekUnsub=profileUnsub=mealTimesUnsub=null; todayTotal=0; weekTotals=[]; todayEntries=[]; cuisineProfile=null; pfLoaded=false; stopBarcode(); stopHealth(); }
 
+// ---- shared plate (matches Android: estimatedTotalGrams/portionFraction/headcount/isSharedPlate) ----
+let headcount=2, portionPercent=50;
+function updatePortionLabel(){
+  $("portionLabel").textContent = `${portionPercent}%`;
+}
+function updateHeadcountDefault(){
+  $("headcountValue").textContent = headcount;
+  portionPercent = Math.round(100/headcount/5)*5 || 5;
+  $("portionSlider").value = portionPercent;
+  updatePortionLabel();
+}
+$("sharedPlateToggle").addEventListener("change",()=>{
+  $("sharedPlateControls").style.display = $("sharedPlateToggle").checked ? "block" : "none";
+});
+$("headcountMinus").addEventListener("click",()=>{ if(headcount>2){ headcount--; updateHeadcountDefault(); } });
+$("headcountPlus").addEventListener("click",()=>{ if(headcount<12){ headcount++; updateHeadcountDefault(); } });
+$("portionSlider").addEventListener("input",()=>{ portionPercent=Number($("portionSlider").value); updatePortionLabel(); });
+
 // ---- actions ----
 async function addFood(name, grams){
   name=(name||"").trim(); grams=Math.round(Number(grams));
   if(!name){ toast("Enter a food name.",false); return; }
   if(!(grams>0)){ toast("Enter the protein in grams.",false); return; }
-  const entry={ foodName:name, grams:grams, timestamp:serverTimestamp() };
+  const isShared = $("sharedPlateToggle").checked;
+  let entry;
+  if(isShared){
+    const fraction = portionPercent/100;
+    const portionGrams = Math.max(1, Math.round(grams*fraction));
+    entry = {
+      foodName:name, grams:portionGrams, timestamp:serverTimestamp(),
+      isSharedPlate:true, estimatedTotalGrams:grams, portionFraction:fraction, headcount:headcount
+    };
+  } else {
+    entry = { foodName:name, grams:grams, timestamp:serverTimestamp() };
+  }
   // Attach macros from the most recent photo scan, if this Add follows one.
   if(pendingMacros){
     if(pendingMacros.calories>0) entry.calories=pendingMacros.calories;
@@ -972,8 +1080,13 @@ $("foodName").addEventListener("input",()=>{ pendingMacros=null; });
 // Quick-add chips are populated from live favourites (see renderFavorites).
 
 // ---- photo + AI food recognition (calls recognizeFood in us-central1) ----
-$("photoBtn").addEventListener("click",()=>$("foodPhoto").click());
-$("foodPhoto").addEventListener("change",async e=>{
+$("cameraBtn").addEventListener("click",()=>$("foodPhotoCamera").click());
+$("galleryBtn").addEventListener("click",()=>$("foodPhotoGallery").click());
+$("foodPhotoCamera").addEventListener("change",async e=>{
+  const file=e.target.files[0]; e.target.value="";
+  if(file) await recognizePhoto(file, $("cameraBtn"));
+});
+$("foodPhotoGallery").addEventListener("change",async e=>{
   const file=e.target.files && e.target.files[0]; e.target.value="";   // reset so same file can be re-picked
   if(file) await recognizePhoto(file);
 });
@@ -987,8 +1100,8 @@ async function fileToBase64Jpeg(file, maxDim, quality){
   canvas.getContext("2d").drawImage(img,0,0,w,h);
   return canvas.toDataURL("image/jpeg", quality).split(",")[1];
 }
-async function recognizePhoto(file){
-  const btn=$("photoBtn"); const orig=btn.innerHTML; const hint=$("aiHint");
+async function recognizePhoto(file, triggerBtn){
+  const btn=triggerBtn || $("cameraBtn"); const orig=btn.innerHTML; const hint=$("aiHint");
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Reading your photo…'; hint.style.display="none";
   try{
     const imageBase64=await fileToBase64Jpeg(file, 1024, 0.9);
