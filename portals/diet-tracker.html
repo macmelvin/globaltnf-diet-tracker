@@ -559,9 +559,10 @@
             </div>
           </div>
           <div class="field-lbl" style="text-align:center;color:var(--muted);margin:14px 0 12px">or enter it manually</div>
-          <div class="row food-manual-row" style="align-items:flex-end">
-            <div style="flex:1"><div class="field-lbl">Food</div><input class="input" id="foodName" placeholder="Chicken breast" autocomplete="off"></div>
-            <div style="width:120px"><div class="field-lbl">Protein (g)</div><input class="input" id="foodGrams" type="number" min="1" step="1" placeholder="30" inputmode="numeric"></div>
+          <div style="margin-bottom:10px"><div class="field-lbl">Food</div><input class="input" id="foodName" placeholder="Chicken breast" autocomplete="off" style="width:100%"></div>
+          <div class="row" style="align-items:flex-end">
+            <button class="btn ghost" id="searchFoodBtn" type="button" title="Look up protein &amp; macros for this food name">Search</button>
+            <div style="width:48px"><div class="field-lbl">Protein (g)</div><input class="input" id="foodGrams" type="number" min="1" step="1" placeholder="30" inputmode="numeric"></div>
             <button class="btn primary" id="addFood">Add</button>
           </div>
           <div class="chip-row" id="quickChips">
@@ -1076,6 +1077,45 @@ async function addFood(name, grams){
 }
 $("addFood").addEventListener("click",()=>addFood($("foodName").value,$("foodGrams").value));
 $("foodGrams").addEventListener("keydown",e=>{ if(e.key==="Enter") addFood($("foodName").value,$("foodGrams").value); });
+$("searchFoodBtn").addEventListener("click",()=>searchFood($("foodName").value));
+async function searchFood(name){
+  name=(name||"").trim();
+  if(!name){ toast("Enter a food name first.",false); return; }
+  const btn=$("searchFoodBtn"); const orig=btn.innerHTML; const hint=$("aiHint");
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Searching...'; hint.style.display="none";
+  try{
+    const res=await httpsCallable(fnsUS,"searchFoodByName")({ foodDescription:name });
+    const d=res.data||{};
+    const returnedName=(d.foodName||"").trim();
+    const grams=Math.round(Number(d.estimatedProteinGrams)||0);
+    if(!returnedName){ hint.textContent="Couldn't find that food -- try a more specific description, or enter the protein manually."; hint.style.display="block"; return; }
+    $("foodName").value=returnedName; $("foodGrams").value=grams>0?grams:"";
+    pendingMacros={
+      calories:Math.round(Number(d.estimatedCalories)||0),
+      carbs:Math.round(Number(d.estimatedCarbsGrams)||0),
+      fat:Math.round(Number(d.estimatedFatGrams)||0),
+      sugar:Math.round(Number(d.estimatedSugarGrams)||0),
+    };
+    const conf=d.confidence?(" - "+d.confidence+" confidence"):"";
+    const extra=d.notes?(" "+d.notes):"";
+    const macroBits=[];
+    if(pendingMacros.calories>0) macroBits.push("~"+pendingMacros.calories+" kcal");
+    if(pendingMacros.carbs>0) macroBits.push(pendingMacros.carbs+"g carbs");
+    if(pendingMacros.fat>0) macroBits.push(pendingMacros.fat+"g fat");
+    if(pendingMacros.sugar>0) macroBits.push(pendingMacros.sugar+"g sugar");
+    const macroLine=macroBits.length?(" ("+macroBits.join(" - ")+")"):"";
+    hint.textContent="AI: "+returnedName+" -- about "+grams+" g protein"+macroLine+conf+". Check it and tap Add."+extra;
+    hint.style.display="block";
+    $("foodGrams").focus(); $("foodGrams").select && $("foodGrams").select();
+  }catch(e){
+    const c=e.code||"";
+    if(c.includes("unauthenticated")) toast("Please sign in again to search foods.",false);
+    else if(c.includes("resource-exhausted")) toast(e.message||"You've reached this month's free limit for this feature.",false);
+    else toast("Couldn't search that food: "+(e.message||e),false);
+  }finally{
+    btn.disabled=false; btn.innerHTML=orig;
+  }
+}
 // Typing a food name by hand means it's not the scanned item — drop stale macros.
 $("foodName").addEventListener("input",()=>{ pendingMacros=null; });
 // Quick-add chips are populated from live favourites (see renderFavorites).

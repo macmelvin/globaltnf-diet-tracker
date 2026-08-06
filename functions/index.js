@@ -60,3 +60,7 @@ exports.deleteMyAccount = deleteAccount.deleteMyAccount;  // member callable (se
 exports.createSelfPayCheckout = billing.createSelfPayCheckout;
 exports.getSelfPayOptions     = billing.getSelfPayOptions;   // member: currencies + prices to choose from
 exports.setSelfPayPrices      = billing.setSelfPayPrices;    // admin: edit the self-pay price list
+
+const foodRecognition = require("./foodRecognition");
+exports.recognizeFood = foodRecognition.recognizeFood;
+exports.searchFoodByName = foodRecognition.searchFoodByName;
