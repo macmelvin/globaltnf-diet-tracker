@@ -19,7 +19,7 @@ const REGION = "asia-southeast1";
 const ADMIN_UIDS = ["EwPXERBcCOZqq7NlD6gbjQO7bQu1"];
 
 // Public links (hosted on Firebase Hosting).
-const TRACKER_URL = "https://global-tnf-diet-tracker.web.app/protein-tracker";
+const TRACKER_URL = "https://global-tnf-diet-tracker.web.app/diet-tracker";
 const GUIDE_URL = "https://global-tnf-diet-tracker.web.app/install";
 const INSTALL_VIDEO_URL = "https://global-tnf-diet-tracker.web.app/install-ios.mp4";
 const INSTALL_POSTER_URL = "https://global-tnf-diet-tracker.web.app/install-ios-poster.jpg";
